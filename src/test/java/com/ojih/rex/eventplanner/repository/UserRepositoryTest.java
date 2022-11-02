@@ -5,6 +5,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.List;
+
+import static org.junit.Assert.assertNotNull;
+
 @SpringBootTest
 public class UserRepositoryTest {
 
@@ -12,9 +16,7 @@ public class UserRepositoryTest {
     private UserRepository userRepository;
 
     @Test
-    public void saveUser() {
-        User user = new User("rex.ojih", "Rex", "Ojih", "rex.ojih@gmail.com", "fooBar", "Houston");
-
-        userRepository.save(user);
+    public void userRepositoryShouldNotBeNull() {
+        assertNotNull(userRepository);
     }
 }

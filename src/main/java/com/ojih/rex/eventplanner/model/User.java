@@ -1,29 +1,17 @@
 package com.ojih.rex.eventplanner.model;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(
-        name = "User",
-        uniqueConstraints = @UniqueConstraint(
-                name = "unique_email",
-                columnNames = "email_address"
-        ))
-@AttributeOverrides({
-        @AttributeOverride(
-                name = "userId",
-                column = @Column(name = "user_id")
-        )
-})
 public class User {
 
     @Id
@@ -41,13 +29,15 @@ public class User {
     private String firstName;
     private String lastName;
     @Column(
-            name = "email_address",
             nullable = false
     )
     private String email;
     private String password;
     private String homeTown;
-    @ElementCollection(targetClass = Event.class)
+    @ManyToMany(
+            mappedBy = "attendees",
+            fetch = FetchType.EAGER
+    )
     private List<Event> events;
 
     public User(String userName, String firstName, String lastName, String email, String password) {
@@ -99,12 +89,9 @@ public class User {
         this.email = email;
     }
 
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
+    public void updatePassword(String originalPassword, String newPassword) {
+        if (originalPassword.equals(password))
+            this.password = newPassword;
     }
 
     public String getHomeTown() {
@@ -121,5 +108,23 @@ public class User {
 
     public void setEvents(List<Event> events) {
         this.events = events;
+    }
+
+    public void addEventAttending(Event event) {
+        if (events == null) events = new ArrayList<>();
+        events.add(event);
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "userId=" + userId +
+                ", userName='" + userName + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
+                ", homeTown='" + homeTown + '\'' +
+                '}';
     }
 }

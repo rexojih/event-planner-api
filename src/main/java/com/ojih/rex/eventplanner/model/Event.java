@@ -1,11 +1,11 @@
 package com.ojih.rex.eventplanner.model;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -32,32 +32,33 @@ public class Event {
     private String location;
     private String description;
     private String category;
-    @OneToOne(
-            cascade = CascadeType.ALL
+    @ManyToOne(
+            cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY,
+            optional = false
     )
     @JoinColumn(
-            name = "user_id",
-            referencedColumnName = "user_id"
+            name = "host_id",
+            referencedColumnName = "userId"
     )
     private User host;
     private Integer maxAttendees;
     @ManyToMany(
-            cascade = CascadeType.ALL
+            cascade = CascadeType.ALL,
+            fetch = FetchType.EAGER
     )
     @JoinTable(
-            name = "user_event_map",
+            name = "event_attendees",
             joinColumns = @JoinColumn(
-                    name = "event_id",
-                    referencedColumnName = "eventId"
+                    name = "event_id"
             ),
             inverseJoinColumns = @JoinColumn(
-                    name = "user_id",
-                    referencedColumnName = "userId"
+                    name = "user_id"
             )
     )
     private List<User> attendees;
 
-    public Event(String title, Date date, String location, String category, User host) {
+    public Event(String title, Date date, String location, String category) {
         this.title = title;
         this.date = date;
         this.location = location;
@@ -65,7 +66,7 @@ public class Event {
         this.host = host;
     }
 
-    public Event(String title, Date date, String location, String description, String category, User host) {
+    public Event(String title, Date date, String location, String description, String category) {
         this.title = title;
         this.date = date;
         this.location = location;
@@ -74,7 +75,7 @@ public class Event {
         this.host = host;
     }
 
-    public Event(String title, Date date, String location, String category, User host, Integer maxAttendees) {
+    public Event(String title, Date date, String location, String category, Integer maxAttendees) {
         this.title = title;
         this.date = date;
         this.location = location;
@@ -131,6 +132,7 @@ public class Event {
 
     public void setHost(User host) {
         this.host = host;
+        this.addAttendee(host);
     }
 
     public Integer getMaxAttendees() {
@@ -155,5 +157,23 @@ public class Event {
 
     public void setCategory(String category) {
         this.category = category;
+    }
+
+    public void addAttendee(User user) {
+        if (attendees == null) attendees = new ArrayList<>();
+        if (attendees.size() < maxAttendees) attendees.add(user);
+    }
+
+    @Override
+    public String toString() {
+        return "Event{" +
+                "eventId=" + eventId +
+                ", title='" + title + '\'' +
+                ", date=" + date +
+                ", location='" + location + '\'' +
+                ", description='" + description + '\'' +
+                ", category='" + category + '\'' +
+                ", maxAttendees=" + maxAttendees +
+                '}';
     }
 }
