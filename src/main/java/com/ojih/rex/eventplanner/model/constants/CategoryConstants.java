@@ -1,4 +1,4 @@
-package com.ojih.rex.eventplanner.model;
+package com.ojih.rex.eventplanner.model.constants;
 
 public class CategoryConstants {
 

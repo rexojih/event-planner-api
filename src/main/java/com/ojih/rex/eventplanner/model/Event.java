@@ -27,10 +27,22 @@ public class Event {
             generator = "event_sequence"
     )
     private Long eventId;
+    @Column(
+            nullable = false
+    )
     private String title;
+    @Column(
+            nullable = false
+    )
     private Date date;
-    private String location;
+    @Column(
+            nullable = false
+    )
+    private Location location;
     private String description;
+    @Column(
+            nullable = false
+    )
     private String category;
     @ManyToOne(
             cascade = CascadeType.ALL,
@@ -58,7 +70,7 @@ public class Event {
     )
     private List<User> attendees;
 
-    public Event(String title, Date date, String location, String category) {
+    public Event(String title, Date date, Location location, String category) {
         this.title = title;
         this.date = date;
         this.location = location;
@@ -66,7 +78,7 @@ public class Event {
         this.host = host;
     }
 
-    public Event(String title, Date date, String location, String description, String category) {
+    public Event(String title, Date date, Location location, String description, String category) {
         this.title = title;
         this.date = date;
         this.location = location;
@@ -75,7 +87,7 @@ public class Event {
         this.host = host;
     }
 
-    public Event(String title, Date date, String location, String category, Integer maxAttendees) {
+    public Event(String title, Date date, Location location, String category, Integer maxAttendees) {
         this.title = title;
         this.date = date;
         this.location = location;
@@ -83,8 +95,6 @@ public class Event {
         this.host = host;
         this.maxAttendees = maxAttendees;
     }
-
-
 
     public Long getEventId() {
         return eventId;
@@ -110,11 +120,11 @@ public class Event {
         this.date = date;
     }
 
-    public String getLocation() {
+    public Location getLocation() {
         return location;
     }
 
-    public void setLocation(String location) {
+    public void setLocation(Location location) {
         this.location = location;
     }
 

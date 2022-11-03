@@ -25,15 +25,27 @@ public class User {
             generator = "user_sequence"
     )
     private Long userId;
+    @Column(
+            nullable = false
+    )
     private String userName;
+    @Column(
+            nullable = false
+    )
     private String firstName;
+    @Column(
+            nullable = false
+    )
     private String lastName;
     @Column(
             nullable = false
     )
     private String email;
+    @Column(
+            nullable = false
+    )
     private String password;
-    private String homeTown;
+    public Location location;
     @ManyToMany(
             mappedBy = "attendees",
             fetch = FetchType.EAGER
@@ -48,13 +60,13 @@ public class User {
         this.password = password;
     }
 
-    public User(String userName, String firstName, String lastName, String email, String password, String homeTown) {
+    public User(String userName, String firstName, String lastName, String email, String password, Location location) {
         this.userName = userName;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.password = password;
-        this.homeTown = homeTown;
+        this.location = location;
     }
 
     public Long getUserId() {
@@ -94,12 +106,12 @@ public class User {
             this.password = newPassword;
     }
 
-    public String getHomeTown() {
-        return homeTown;
+    public Location getHomeTown() {
+        return location;
     }
 
-    public void setHomeTown(String homeTown) {
-        this.homeTown = homeTown;
+    public void setHomeTown(Location homeTown) {
+        this.location = location;
     }
 
     public List<Event> getEvents() {
@@ -124,7 +136,7 @@ public class User {
                 ", lastName='" + lastName + '\'' +
                 ", email='" + email + '\'' +
                 ", password='" + password + '\'' +
-                ", homeTown='" + homeTown + '\'' +
+                ", location='" + location + '\'' +
                 '}';
     }
 }

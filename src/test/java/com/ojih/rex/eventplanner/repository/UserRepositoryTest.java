@@ -17,6 +17,6 @@ public class UserRepositoryTest {
 
     @Test
     public void userRepositoryShouldNotBeNull() {
-        assertNotNull(userRepository);
+        assertNotNull("UserRepository should not be null", userRepository);
     }
 }

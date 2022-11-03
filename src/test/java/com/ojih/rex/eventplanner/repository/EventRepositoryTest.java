@@ -14,6 +14,6 @@ class EventRepositoryTest {
 
     @Test
     public void eventRepositoryShouldNotBeNull() {
-        assertNotNull(eventRepository);
+        assertNotNull("EventRepository should not be null", eventRepository);
     }
 }
