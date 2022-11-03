@@ -21,7 +21,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     public List<Event> findByDateBefore(Date date);
     public List<Event> findByDateBetween(Date after, Date before);
     public List<Event> findByCategory(String category);
-    public List<Event> findByCategoryOrderByDateDesc(Date date);
+    public List<Event> findByCategoryOrderByDateDesc(String category);
     public List<Event> findByHost(User user);
     public List<Event> findByHostOrderByDateDesc(User user);
     public List<Event> findByLocationCity(String city);
@@ -42,5 +42,4 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     public List<Event> findByLocationStateOrLocationPostalCodeOrderByDateDesc(String state, String postalCode);
     public List<Event> findByLocationStateAndLocationPostalCode(String state, String postalCode);
     public List<Event> findByLocationStateAndLocationPostalCodeOrderByDateDesc(String state, String postalCode);
-
 }

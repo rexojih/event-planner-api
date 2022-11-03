@@ -174,6 +174,11 @@ public class Event {
         if (attendees.size() < maxAttendees) attendees.add(user);
     }
 
+    public void addAttendees(List<User> attendeesList) {
+        if (attendees == null) attendees = new ArrayList<>();
+        if (attendees.size() + attendeesList.size() <= maxAttendees) attendees.addAll(attendeesList);
+    }
+
     @Override
     public String toString() {
         return "Event{" +
