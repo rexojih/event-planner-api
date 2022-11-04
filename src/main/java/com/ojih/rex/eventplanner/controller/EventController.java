@@ -96,11 +96,11 @@ public class EventController {
 
     public Date getDateFomDateString(String dateString) {
         Date date = null;
-        SimpleDateFormat format = new SimpleDateFormat("YYYY-dd-MM'T'HH:mm:ss.SSSX");
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-dd-MM'T'HH:mm:ss.SSSX");
         try {
             date = format.parse(dateString);
         } catch (Exception e) {
-            System.out.println("Unable to convert String to Date" + e);
+            e.printStackTrace();
         }
         return date;
     }

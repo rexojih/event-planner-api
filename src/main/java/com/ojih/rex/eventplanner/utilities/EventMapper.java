@@ -13,10 +13,22 @@ public class EventMapper implements Mapper<EventDTO, Event> {
 
     public EventDTO toDto(Event event) {
         List<Long> attendeeIds = new ArrayList<>();
+
         for (User attendee : event.getAttendees()) {
             attendeeIds.add(attendee.getUserId());
         }
-        return new EventDTO(event.getEventId(), event.getTitle(), event.getDate(), event.getLocation(), event.getDescription(), event.getCategory(), event.getHost().getUserId(), attendeeIds);
+
+        return EventDTO.builder()
+                .eventId(event.getEventId())
+                .title(event.getTitle())
+                .date(event.getDate())
+                .location(event.getLocation())
+                .description(event.getDescription())
+                .category(event.getCategory())
+                .hostId(event.getHost().getUserId())
+                .maxAttendees(event.getMaxAttendees())
+                .attendeeIds(attendeeIds)
+                .build();
     }
 
     public List<EventDTO> toDtos(List<Event> events) {

@@ -88,7 +88,6 @@ public class Event {
         this.location = location;
         this.description = description;
         this.category = category;
-        this.host = host;
     }
 
     public Event(String title, Date date, Location location, String description, String category, Integer maxAttendees) {
@@ -97,7 +96,6 @@ public class Event {
         this.location = location;
         this.description = description;
         this.category = category;
-        this.host = host;
         this.maxAttendees = maxAttendees;
     }
 

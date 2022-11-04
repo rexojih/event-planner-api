@@ -13,7 +13,7 @@ class EventRepositoryTest {
     private EventRepository eventRepository;
 
     @Test
-    public void eventRepositoryShouldNotBeNull() {
+    void eventRepositoryShouldNotBeNull() {
         assertNotNull("EventRepository should not be null", eventRepository);
     }
 }

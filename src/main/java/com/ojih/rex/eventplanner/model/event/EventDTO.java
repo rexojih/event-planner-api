@@ -1,11 +1,13 @@
 package com.ojih.rex.eventplanner.model.event;
 
 import com.ojih.rex.eventplanner.model.Location;
+import lombok.Builder;
 
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
+@Builder
 public class EventDTO implements Serializable {
 
     private Long eventId;
@@ -15,18 +17,8 @@ public class EventDTO implements Serializable {
     private String description;
     private String category;
     private Long hostId;
+    private Integer maxAttendees;
     private List<Long> attendeeIds;
-
-    public EventDTO(Long eventId, String title, Date date, Location location, String description, String category, Long hostId, List<Long> attendeeIds) {
-        this.eventId = eventId;
-        this.title = title;
-        this.date = date;
-        this.location = location;
-        this.description = description;
-        this.category = category;
-        this.hostId = hostId;
-        this.attendeeIds = attendeeIds;
-    }
 
     public Long getEventId() {
         return eventId;
@@ -84,9 +76,18 @@ public class EventDTO implements Serializable {
         this.hostId = hostId;
     }
 
+    public Integer getMaxAttendees() {
+        return maxAttendees;
+    }
+
+    public void setMaxAttendees(Integer maxAttendees) {
+        this.maxAttendees = maxAttendees;
+    }
+
     public List<Long> getAttendeeIds() {
         return attendeeIds;
     }
+
 
     public void setAttendeeIds(List<Long> attendeeIds) {
         this.attendeeIds = attendeeIds;

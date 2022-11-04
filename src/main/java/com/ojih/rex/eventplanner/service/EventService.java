@@ -5,9 +5,8 @@ import com.ojih.rex.eventplanner.model.Location;
 import com.ojih.rex.eventplanner.model.User;
 import com.ojih.rex.eventplanner.model.event.Event;
 import com.ojih.rex.eventplanner.repository.EventRepository;
-import com.sun.istack.NotNull;
-import com.sun.istack.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -17,6 +16,8 @@ import java.util.List;
 public class EventService {
 
     private EventRepository eventRepository;
+    private static final String UNABLE_TO_GET_EVENT = "Unable to fetch event ";
+    private static final String FROM_DB = " from DB";
 
     @Autowired
     public EventService(EventRepository eventRepository) {
@@ -38,12 +39,11 @@ public class EventService {
         eventRepository.save(event);
     }
 
-    public void updateEvent(@NotNull Long eventId, @Nullable String newTitle, @Nullable Date newDate, @Nullable Location location, @Nullable String description, @Nullable String category, @Nullable Integer maxAttendees) throws EventServiceException {
+    public void updateEvent(Long eventId, @Nullable String newTitle, @Nullable Date newDate, @Nullable Location location, @Nullable String description, @Nullable String category, @Nullable Integer maxAttendees) throws EventServiceException {
         Event event = eventRepository.findDistinctByEventId(eventId);
         if (event == null)
-            throw new EventServiceException("Unable to fetch user " + eventId + " from DB");
-        else
-            mapUpdate(event, newTitle, newDate, location, description, category, maxAttendees);
+            throw new EventServiceException(UNABLE_TO_GET_EVENT + eventId + FROM_DB);
+        mapUpdate(event, newTitle, newDate, location, description, category, maxAttendees);
     }
 
     private void mapUpdate(Event event, String newTitle, Date newDate, Location newLocation, String newDescription, String newCategory, Integer newMaxAttendees) {
@@ -68,7 +68,7 @@ public class EventService {
     public void addEventAttendee(Long eventId, User newAttendee) throws EventServiceException {
         Event event = eventRepository.findDistinctByEventId(eventId);
         if (event == null)
-            throw new EventServiceException("Unable to fetch user " + eventId + " from DB");
+            throw new EventServiceException(UNABLE_TO_GET_EVENT + eventId + FROM_DB);
         event.addAttendee(newAttendee);
         eventRepository.save(event);
     }
@@ -76,7 +76,7 @@ public class EventService {
     public void addEventAttendees(Long eventId, List<User> newAttendees) throws EventServiceException {
         Event event = eventRepository.findDistinctByEventId(eventId);
         if (event == null)
-            throw new EventServiceException("Unable to fetch user " + eventId + " from DB");
+            throw new EventServiceException(UNABLE_TO_GET_EVENT + eventId + FROM_DB);
         event.addAttendees(newAttendees);
         eventRepository.save(event);
     }

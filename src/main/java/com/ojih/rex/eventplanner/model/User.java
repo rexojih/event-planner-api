@@ -107,11 +107,11 @@ public class User {
             this.password = newPassword;
     }
 
-    public Location getHomeTown() {
+    public Location getLocation() {
         return location;
     }
 
-    public void setHomeTown(Location homeTown) {
+    public void setLocation(Location location) {
         this.location = location;
     }
 

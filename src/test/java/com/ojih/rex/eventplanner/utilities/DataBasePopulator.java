@@ -10,11 +10,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 import java.util.Date;
 import java.util.List;
 
 @SpringBootTest
-public class DataBasePopulator {
+class DataBasePopulator {
 
     @Autowired
     private UserRepository userRepository;
@@ -22,7 +25,7 @@ public class DataBasePopulator {
     private EventRepository eventRepository;
 
     @Test
-    public void populateDatabase() {
+    void populateDatabase() {
         Location homeAddress = new Location("2511 W BRAKER LN", "AUSTIN", "TX", "78758");
         Location eventLocation = new Location("8909 Burnet Rd", "Austin", "TX", "78757");
         User user0 = new User("rex.ojih", "Rex", "Ojih", "rex.ojih@gmail.com", "foo");
@@ -38,11 +41,16 @@ public class DataBasePopulator {
         event.addAttendees(users2);
         event.addAttendee(user4);
         eventRepository.save(event);
+
+        assertNotNull(eventRepository.findByHost(user0));
     }
 
     @Test
-    public void dropDatabaseTables() {
+    void dropDatabaseTables() {
         eventRepository.deleteAllInBatch();
         userRepository.deleteAllInBatch();
+
+        assertNull(userRepository.findAll());
+        assertNull(eventRepository.findAll());
     }
 }
