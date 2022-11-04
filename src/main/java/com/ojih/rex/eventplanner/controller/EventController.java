@@ -16,13 +16,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
-@RequestMapping("/api/v1/event")
+@RequestMapping("/api/v1")
 public class EventController {
 
     private final EventService eventService;
@@ -30,13 +27,13 @@ public class EventController {
     private final Mapper<EventDTO, Event> mapper;
 
     @Autowired
-    public EventController(EventService eventService, UserService userService, UserService userService1, @Qualifier("eventMapper") Mapper<EventDTO, Event> mapper) {
+    public EventController(EventService eventService, UserService userService, @Qualifier("eventMapper") Mapper<EventDTO, Event> mapper) {
         this.eventService = eventService;
-        this.userService = userService1;
+        this.userService = userService;
         this.mapper = mapper;
     }
 
-    @GetMapping("")
+    @GetMapping("/event")
     public ResponseEntity<Object> getEvent(@RequestParam(value = "id", required = false) Long eventId,
                              @RequestHeader(required = false) Map<String, String> requestHeaders,
                              @RequestBody(required = false) String requestBody) {
@@ -62,7 +59,12 @@ public class EventController {
         return responseEntity;
     }
 
-    @PostMapping("")
+    @GetMapping("/events")
+    public List<EventDTO> getEvents() {
+        return mapper.toDtos(eventService.getEvents());
+    }
+
+    @PostMapping("/event")
     public ResponseEntity<Object> postEvent(@RequestHeader(required = false) Map<String, String> requestHeaders,
                                             @RequestBody String requestBody) {
 
@@ -75,7 +77,7 @@ public class EventController {
                 JSONObject requestBodyJson = new JSONObject(requestBody);
                 Optional.ofNullable(requestBodyJson.optString("title")).ifPresent(event::setTitle);
                 Optional.ofNullable(requestBodyJson.optString("date")).ifPresent(date -> event.setDate(getDateFomDateString(date)));
-                Optional.ofNullable(requestBodyJson.optJSONObject("location")).ifPresent(location -> event.setLocation(getLocationFromString(location)));
+                Optional.ofNullable(requestBodyJson.optJSONObject("location")).ifPresent(location -> event.setLocation(getLocationFromJson(location)));
                 Optional.ofNullable(requestBodyJson.optString("description")).ifPresent(event::setDescription);
                 Optional.ofNullable(requestBodyJson.optString("category")).ifPresent(event::setCategory);
                 Optional.of(requestBodyJson.optLong("hostId")).ifPresent(hostId -> {
@@ -97,6 +99,7 @@ public class EventController {
     public Date getDateFomDateString(String dateString) {
         Date date = null;
         SimpleDateFormat format = new SimpleDateFormat("yyyy-dd-MM'T'HH:mm:ss.SSSX");
+        format.setTimeZone(TimeZone.getTimeZone("UTC"));
         try {
             date = format.parse(dateString);
         } catch (Exception e) {
@@ -105,17 +108,12 @@ public class EventController {
         return date;
     }
 
-    public Location getLocationFromString(JSONObject locationJson) {
+    public Location getLocationFromJson(JSONObject locationJson) {
         Location location = new Location();
         Optional.ofNullable(locationJson.optString("streetAddress")).ifPresent(location::setStreetAddress);
         Optional.ofNullable(locationJson.optString("city")).ifPresent(location::setCity);
         Optional.ofNullable(locationJson.optString("state")).ifPresent(location::setState);
         Optional.ofNullable(locationJson.optString("postalCode")).ifPresent(location::setPostalCode);
         return location;
-    }
-
-    @GetMapping("/events")
-    public List<EventDTO> getEvents() {
-        return mapper.toDtos(eventService.getEvents());
     }
 }
