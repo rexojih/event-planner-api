@@ -49,7 +49,7 @@ public class User {
     public Location location;
     @ManyToMany(
             mappedBy = "attendees",
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
     )
     private List<Event> events;
 

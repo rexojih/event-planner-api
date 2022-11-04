@@ -147,6 +147,7 @@ public class Event {
 
     public void setHost(User host) {
         this.host = host;
+        this.addAttendee(host);
     }
 
     public Integer getMaxAttendees() {

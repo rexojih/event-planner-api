@@ -29,7 +29,6 @@ public class EventService {
 
     public void storeEventWithHost(User host, Event event) {
         event.setHost(host);
-        event.addAttendee(host);
         eventRepository.save(event);
     }
 
