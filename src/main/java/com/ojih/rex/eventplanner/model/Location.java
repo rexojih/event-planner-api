@@ -1,17 +1,28 @@
 package com.ojih.rex.eventplanner.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.Embeddable;
+import java.io.Serializable;
 
 @Embeddable
 @Data
-public class Location {
+@NoArgsConstructor
+public class Location implements Serializable {
 
     private String streetAddress;
     private String city;
     private String state;
     private String postalCode;
+
+    public Location(String streetAddress, String city, String state, String postalCode) {
+        this.streetAddress = streetAddress;
+        this.city = city;
+        this.state = state;
+        this.postalCode = postalCode;
+    }
 
     public String getStreetAddress() {
         return streetAddress;

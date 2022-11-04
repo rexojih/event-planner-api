@@ -1,5 +1,6 @@
 package com.ojih.rex.eventplanner.model;
 
+import com.ojih.rex.eventplanner.model.event.Event;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

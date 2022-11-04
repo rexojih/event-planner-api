@@ -1,11 +1,15 @@
-package com.ojih.rex.eventplanner.model;
+package com.ojih.rex.eventplanner.model.event;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.ojih.rex.eventplanner.model.Location;
+import com.ojih.rex.eventplanner.model.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -44,6 +48,7 @@ public class Event {
             nullable = false
     )
     private String category;
+    @JsonManagedReference
     @ManyToOne(
             cascade = CascadeType.ALL,
             fetch = FetchType.LAZY,
@@ -57,7 +62,7 @@ public class Event {
     private Integer maxAttendees;
     @ManyToMany(
             cascade = CascadeType.ALL,
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
     )
     @JoinTable(
             name = "event_attendees",
@@ -75,7 +80,6 @@ public class Event {
         this.date = date;
         this.location = location;
         this.category = category;
-        this.host = host;
     }
 
     public Event(String title, Date date, Location location, String description, String category) {
@@ -87,10 +91,11 @@ public class Event {
         this.host = host;
     }
 
-    public Event(String title, Date date, Location location, String category, Integer maxAttendees) {
+    public Event(String title, Date date, Location location, String description, String category, Integer maxAttendees) {
         this.title = title;
         this.date = date;
         this.location = location;
+        this.description = description;
         this.category = category;
         this.host = host;
         this.maxAttendees = maxAttendees;
@@ -142,7 +147,6 @@ public class Event {
 
     public void setHost(User host) {
         this.host = host;
-        this.addAttendee(host);
     }
 
     public Integer getMaxAttendees() {
@@ -170,13 +174,23 @@ public class Event {
     }
 
     public void addAttendee(User user) {
-        if (attendees == null) attendees = new ArrayList<>();
-        if (attendees.size() < maxAttendees) attendees.add(user);
+        if (attendees == null) {
+            attendees = new ArrayList<>(Arrays.asList(user));
+        } else if (attendees.size() < maxAttendees){
+            ArrayList<User> updatedAttendees = new ArrayList<>(attendees);
+            updatedAttendees.add(user);
+            this.setAttendees(updatedAttendees);
+        }
     }
 
-    public void addAttendees(List<User> attendeesList) {
-        if (attendees == null) attendees = new ArrayList<>();
-        if (attendees.size() + attendeesList.size() <= maxAttendees) attendees.addAll(attendeesList);
+    public void addAttendees(List<User> newAttendees) {
+        if (attendees == null) {
+            attendees = new ArrayList<>(newAttendees);
+        } else if (attendees.size() + newAttendees.size() <= maxAttendees) {
+            List<User> updatedAttendees = new ArrayList<>(attendees);
+            updatedAttendees.addAll(newAttendees);
+            this.setAttendees(updatedAttendees);
+        }
     }
 
     @Override

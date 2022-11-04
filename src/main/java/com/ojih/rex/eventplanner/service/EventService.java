@@ -1,8 +1,12 @@
 package com.ojih.rex.eventplanner.service;
 
-import com.ojih.rex.eventplanner.model.Event;
+import com.ojih.rex.eventplanner.exception.EventServiceException;
+import com.ojih.rex.eventplanner.model.Location;
 import com.ojih.rex.eventplanner.model.User;
+import com.ojih.rex.eventplanner.model.event.Event;
 import com.ojih.rex.eventplanner.repository.EventRepository;
+import com.sun.istack.NotNull;
+import com.sun.istack.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,18 +23,70 @@ public class EventService {
         this.eventRepository = eventRepository;
     }
 
-    public void createEvent(User host, Event event) {
-        event.setHost(host);
+    public void storeEvent(Event event) {
         eventRepository.save(event);
     }
 
-    public void createEventWithAttendees(User host, Event event, List<User> attendees) {
+    public void storeEventWithHost(User host, Event event) {
         event.setHost(host);
-        event.addAttendees(attendees);
+        event.addAttendee(host);
         eventRepository.save(event);
     }
 
-    public List<Event> getEventFromId(Long eventId) {
+    public void storeEventWithAttendees(User host, Event event, List<User> attendees) {
+        event.setHost(host);
+        event.setAttendees(attendees);
+        eventRepository.save(event);
+    }
+
+    public void updateEvent(@NotNull Long eventId, @Nullable String newTitle, @Nullable Date newDate, @Nullable Location location, @Nullable String description, @Nullable String category, @Nullable Integer maxAttendees) throws EventServiceException {
+        Event event = eventRepository.findDistinctByEventId(eventId);
+        if (event == null)
+            throw new EventServiceException("Unable to fetch user " + eventId + " from DB");
+        else
+            mapUpdate(event, newTitle, newDate, location, description, category, maxAttendees);
+    }
+
+    private void mapUpdate(Event event, String newTitle, Date newDate, Location newLocation, String newDescription, String newCategory, Integer newMaxAttendees) {
+        if (newTitle != null)
+            event.setTitle(newTitle);
+        if (newDate != null)
+            event.setDate(newDate);
+        if (newLocation != null)
+            event.setLocation(newLocation);
+        if (newDescription != null)
+            event.setDescription(newDescription);
+        if (newCategory != null)
+            event.setCategory(newCategory);
+        if (newMaxAttendees != null && validMaxAttendees(newMaxAttendees, event))
+            event.setMaxAttendees(newMaxAttendees);
+    }
+
+    private boolean validMaxAttendees(Integer newMaxAttendees, Event event) {
+        return newMaxAttendees > 0 && newMaxAttendees >= event.getAttendees().size();
+    }
+
+    public void addEventAttendee(Long eventId, User newAttendee) throws EventServiceException {
+        Event event = eventRepository.findDistinctByEventId(eventId);
+        if (event == null)
+            throw new EventServiceException("Unable to fetch user " + eventId + " from DB");
+        event.addAttendee(newAttendee);
+        eventRepository.save(event);
+    }
+
+    public void addEventAttendees(Long eventId, List<User> newAttendees) throws EventServiceException {
+        Event event = eventRepository.findDistinctByEventId(eventId);
+        if (event == null)
+            throw new EventServiceException("Unable to fetch user " + eventId + " from DB");
+        event.addAttendees(newAttendees);
+        eventRepository.save(event);
+    }
+
+    public List<Event> getEvents() {
+        return eventRepository.findAll();
+    }
+
+    public Event getEventFromId(Long eventId) {
         return eventRepository.findDistinctByEventId(eventId);
     }
 
