@@ -2,7 +2,7 @@ package com.ojih.rex.eventplanner.service;
 
 import com.ojih.rex.eventplanner.exception.EventServiceException;
 import com.ojih.rex.eventplanner.model.Location;
-import com.ojih.rex.eventplanner.model.User;
+import com.ojih.rex.eventplanner.model.user.User;
 import com.ojih.rex.eventplanner.model.event.Event;
 import com.ojih.rex.eventplanner.repository.EventRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,7 +71,7 @@ public class EventService {
     public void addEventAttendees(Long eventId, List<User> newAttendees) throws EventServiceException {
         Event event = eventRepository.findDistinctByEventId(eventId);
         if (event == null)
-            throw new EventServiceException("Unable to add attendees. EventId" + eventId + NOT_FOUND);
+            throw new EventServiceException("Unable to add attendees. EventId " + eventId + NOT_FOUND);
         event.addAttendees(newAttendees);
         eventRepository.save(event);
     }
@@ -80,8 +80,12 @@ public class EventService {
         return eventRepository.findAll();
     }
 
-    public Event getEventFromId(Long eventId) {
-        return eventRepository.findDistinctByEventId(eventId);
+    public Event getEventFromId(Long eventId) throws EventServiceException {
+        Event event = eventRepository.findDistinctByEventId(eventId);
+        if (event == null) {
+            throw new EventServiceException("Unable to get attendees. EventId " + eventId + NOT_FOUND);
+        }
+        return event;
     }
 
     public List<Event> getEventsFromHost(User host) {

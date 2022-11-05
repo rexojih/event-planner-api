@@ -2,7 +2,7 @@ package com.ojih.rex.eventplanner.utilities;
 
 import com.ojih.rex.eventplanner.model.event.Event;
 import com.ojih.rex.eventplanner.model.Location;
-import com.ojih.rex.eventplanner.model.User;
+import com.ojih.rex.eventplanner.model.user.User;
 import com.ojih.rex.eventplanner.model.constants.CategoryConstants;
 import com.ojih.rex.eventplanner.repository.EventRepository;
 import com.ojih.rex.eventplanner.repository.UserRepository;

@@ -1,9 +1,10 @@
 package com.ojih.rex.eventplanner.controller;
 
 import com.ojih.rex.eventplanner.model.Location;
-import com.ojih.rex.eventplanner.model.User;
+import com.ojih.rex.eventplanner.model.user.User;
 import com.ojih.rex.eventplanner.model.event.Event;
 import com.ojih.rex.eventplanner.model.event.EventDTO;
+import com.ojih.rex.eventplanner.model.user.UserDTO;
 import com.ojih.rex.eventplanner.service.EventService;
 import com.ojih.rex.eventplanner.service.UserService;
 import com.ojih.rex.eventplanner.utilities.Mapper;
@@ -25,32 +26,34 @@ public class EventController {
 
     private final EventService eventService;
     private final UserService userService;
-    private final Mapper<EventDTO, Event> mapper;
+    private final Mapper<EventDTO, Event> eventMapper;
+    private final Mapper<UserDTO, User> userMapper;
 
     private static final String EVENT_ID = "eventId";
     private static final String HOST_ID = "hostId";
 
     @Autowired
-    public EventController(EventService eventService, UserService userService, @Qualifier("eventMapper") Mapper<EventDTO, Event> mapper) {
+    public EventController(EventService eventService, UserService userService, @Qualifier("eventMapper") Mapper<EventDTO, Event> eventMapper, @Qualifier("userMapper") Mapper<UserDTO, User> userMapper) {
         this.eventService = eventService;
         this.userService = userService;
-        this.mapper = mapper;
+        this.eventMapper = eventMapper;
+        this.userMapper = userMapper;
     }
 
-    @GetMapping("/get/{id}")
+    @GetMapping("/get")
     public ResponseEntity<Object> getEvent(@RequestParam(value = "id", required = false) Long eventId,
                              @RequestHeader(required = false) Map<String, String> requestHeaders,
                              @RequestBody(required = false) String requestBody) {
         ResponseEntity<Object> responseEntity;
         try{
-            if (requestBody != null) {
+            if (!requestBody.isEmpty()) {
                 JSONObject requestBodyJson = new JSONObject(requestBody);
                 eventId = requestBodyJson.getLong(EVENT_ID);
             }
             Event event = eventService.getEventFromId(eventId);
 
             if (event != null)
-                responseEntity = new ResponseEntity<>(mapper.toDto(event), HttpStatus.OK);
+                responseEntity = new ResponseEntity<>(eventMapper.toDto(event), HttpStatus.OK);
             else
                 responseEntity = new ResponseEntity<>("Unable to fetch event " + eventId + " from DB", HttpStatus.NO_CONTENT);
         } catch (JSONException e) {
@@ -64,8 +67,30 @@ public class EventController {
     }
 
     @GetMapping("/all")
-    public List<EventDTO> getEvents() {
-        return mapper.toDtos(eventService.getEvents());
+    public ResponseEntity<List<EventDTO>> getEvents() {
+        return new ResponseEntity<>(eventMapper.toDtos(eventService.getEvents()), HttpStatus.OK);
+    }
+
+    @GetMapping("/attendees")
+    public ResponseEntity<Object> getEventAttendees(@RequestParam(value = "id", required = false) Long eventId,
+                                                        @RequestHeader(required = false) Map<String, String> requestHeaders,
+                                                        @RequestBody(required = false) String requestBody) {
+
+        ResponseEntity<Object> responseEntity;
+
+        try {
+            if (!requestBody.isEmpty()) {
+                JSONObject requestBodyJson = new JSONObject(requestBody);
+                eventId = requestBodyJson.getLong(EVENT_ID);
+            }
+
+            Event event = eventService.getEventFromId(eventId);
+            responseEntity = new ResponseEntity<>(userMapper.toDtos(event.getAttendees()), HttpStatus.OK);
+        } catch (Exception e) {
+            responseEntity = new ResponseEntity<>(e.getMessage(), HttpStatus.NO_CONTENT);
+        }
+
+        return responseEntity;
     }
 
     @PostMapping("/add")
@@ -92,7 +117,7 @@ public class EventController {
                     Optional.ofNullable(requestBodyJson.optString("category")).ifPresent(event::setCategory);
                     Optional.of(requestBodyJson.optInt("maxAttendees")).ifPresent(event::setMaxAttendees);
                     Event storedEvent = eventService.storeEventWithHost(host, event);
-                    responseEntity = new ResponseEntity<>(mapper.toDto(storedEvent), HttpStatus.CREATED);
+                    responseEntity = new ResponseEntity<>(eventMapper.toDto(storedEvent), HttpStatus.CREATED);
                 }
             }
 
@@ -126,7 +151,7 @@ public class EventController {
                     Optional.ofNullable(requestBodyJson.optString("category")).ifPresent(updateEvent::setCategory);
                     Optional.of(requestBodyJson.optInt("maxAttendees")).ifPresent(updateEvent::setMaxAttendees);
                     Event updatedEvent = eventService.updateEvent(eventId, updateEvent);
-                    responseEntity = new ResponseEntity<>(mapper.toDto(updatedEvent), HttpStatus.CREATED);
+                    responseEntity = new ResponseEntity<>(eventMapper.toDto(updatedEvent), HttpStatus.CREATED);
                 }
             }
 
@@ -140,6 +165,7 @@ public class EventController {
     private boolean validRequestBodyJson(JSONObject requestBodyJson, String necessaryKey) {
         return !requestBodyJson.isEmpty() && requestBodyJson.has(necessaryKey) && requestBodyJson.get(necessaryKey) != JSONObject.NULL;
     }
+
     public Date getDateFomDateString(String dateString) throws ParseException {
         Date date = null;
         if (dateString != null && !dateString.isEmpty()) {

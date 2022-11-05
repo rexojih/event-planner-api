@@ -1,6 +1,6 @@
 package com.ojih.rex.eventplanner.repository;
 
-import com.ojih.rex.eventplanner.model.User;
+import com.ojih.rex.eventplanner.model.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

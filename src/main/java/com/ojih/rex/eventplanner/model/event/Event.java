@@ -2,7 +2,7 @@ package com.ojih.rex.eventplanner.model.event;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.ojih.rex.eventplanner.model.Location;
-import com.ojih.rex.eventplanner.model.User;
+import com.ojih.rex.eventplanner.model.user.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
