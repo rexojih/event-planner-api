@@ -15,16 +15,20 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/event")
 public class EventController {
 
     private final EventService eventService;
     private final UserService userService;
     private final Mapper<EventDTO, Event> mapper;
+
+    private static final String EVENT_ID = "eventId";
+    private static final String HOST_ID = "hostId";
 
     @Autowired
     public EventController(EventService eventService, UserService userService, @Qualifier("eventMapper") Mapper<EventDTO, Event> mapper) {
@@ -33,7 +37,7 @@ public class EventController {
         this.mapper = mapper;
     }
 
-    @GetMapping("/event")
+    @GetMapping("/get/{id}")
     public ResponseEntity<Object> getEvent(@RequestParam(value = "id", required = false) Long eventId,
                              @RequestHeader(required = false) Map<String, String> requestHeaders,
                              @RequestBody(required = false) String requestBody) {
@@ -41,7 +45,7 @@ public class EventController {
         try{
             if (requestBody != null) {
                 JSONObject requestBodyJson = new JSONObject(requestBody);
-                eventId = requestBodyJson.getLong("eventId");
+                eventId = requestBodyJson.getLong(EVENT_ID);
             }
             Event event = eventService.getEventFromId(eventId);
 
@@ -51,59 +55,97 @@ public class EventController {
                 responseEntity = new ResponseEntity<>("Unable to fetch event " + eventId + " from DB", HttpStatus.NO_CONTENT);
         } catch (JSONException e) {
             e.printStackTrace();
-            responseEntity = new ResponseEntity<>(e, HttpStatus.BAD_REQUEST);
+            responseEntity = new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             e.printStackTrace();
-            responseEntity = new ResponseEntity<>(e, HttpStatus.INTERNAL_SERVER_ERROR);
+            responseEntity = new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return responseEntity;
     }
 
-    @GetMapping("/events")
+    @GetMapping("/all")
     public List<EventDTO> getEvents() {
         return mapper.toDtos(eventService.getEvents());
     }
 
-    @PostMapping("/event")
+    @PostMapping("/add")
     public ResponseEntity<Object> postEvent(@RequestHeader(required = false) Map<String, String> requestHeaders,
                                             @RequestBody String requestBody) {
 
         ResponseEntity<Object> responseEntity;
         try {
-            if (requestBody == null) {
+            if (requestBody.isEmpty() || requestBody.isBlank()) {
                 responseEntity = new ResponseEntity<>("Cannot store null event", HttpStatus.BAD_REQUEST);
             } else {
                 Event event = new Event();
                 JSONObject requestBodyJson = new JSONObject(requestBody);
-                Optional.ofNullable(requestBodyJson.optString("title")).ifPresent(event::setTitle);
-                Optional.ofNullable(requestBodyJson.optString("date")).ifPresent(date -> event.setDate(getDateFomDateString(date)));
-                Optional.ofNullable(requestBodyJson.optJSONObject("location")).ifPresent(location -> event.setLocation(getLocationFromJson(location)));
-                Optional.ofNullable(requestBodyJson.optString("description")).ifPresent(event::setDescription);
-                Optional.ofNullable(requestBodyJson.optString("category")).ifPresent(event::setCategory);
-                Optional.of(requestBodyJson.optLong("hostId")).ifPresent(hostId -> {
-                    User host = userService.getUserFromId(hostId);
-                    eventService.storeEventWithHost(host, event);
-                });
 
-                eventService.storeEvent(event);
-                responseEntity = new ResponseEntity<>("Event stored", HttpStatus.OK);
+                if (!validRequestBodyJson(requestBodyJson, HOST_ID)) {
+                    responseEntity = new ResponseEntity<>("Unable to add event with no host", HttpStatus.BAD_REQUEST);
+                } else {
+                    Long hostId = requestBodyJson.getLong(HOST_ID);
+                    User host = userService.getUserFromId(hostId);
+                    Optional.ofNullable(requestBodyJson.optString("title")).ifPresent(event::setTitle);
+                    event.setDate(getDateFomDateString(requestBodyJson.optString("date")));
+                    Optional.ofNullable(requestBodyJson.optJSONObject("location")).ifPresent(location -> event.setLocation(getLocationFromJson(location)));
+                    Optional.ofNullable(requestBodyJson.optString("description")).ifPresent(event::setDescription);
+                    Optional.ofNullable(requestBodyJson.optString("category")).ifPresent(event::setCategory);
+                    Optional.of(requestBodyJson.optInt("maxAttendees")).ifPresent(event::setMaxAttendees);
+                    Event storedEvent = eventService.storeEventWithHost(host, event);
+                    responseEntity = new ResponseEntity<>(mapper.toDto(storedEvent), HttpStatus.CREATED);
+                }
             }
 
         } catch (Exception e) {
             e.printStackTrace();
-            responseEntity = new ResponseEntity<>(e, HttpStatus.INTERNAL_SERVER_ERROR);
+            responseEntity = new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return responseEntity;
     }
 
-    public Date getDateFomDateString(String dateString) {
-        Date date = null;
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-dd-MM'T'HH:mm:ss.SSSX");
-        format.setTimeZone(TimeZone.getTimeZone("UTC"));
+    @PutMapping("/update")
+    public ResponseEntity<Object> updateEvent(@RequestHeader(required = false) Map<String, String> requestHeaders,
+                                              @RequestBody String requestBody) {
+
+        ResponseEntity<Object> responseEntity;
         try {
-            date = format.parse(dateString);
+            if (requestBody == null) {
+                responseEntity = new ResponseEntity<>("Cannot update null event", HttpStatus.BAD_REQUEST);
+            } else {
+                Event updateEvent = new Event();
+                JSONObject requestBodyJson = new JSONObject(requestBody);
+
+                if (!validRequestBodyJson(requestBodyJson, EVENT_ID)) {
+                    responseEntity = new ResponseEntity<>("Unable to update event with no eventId", HttpStatus.BAD_REQUEST);
+                } else {
+                    Long eventId = requestBodyJson.getLong(EVENT_ID);
+                    Optional.ofNullable(requestBodyJson.optString("title")).ifPresent(updateEvent::setTitle);
+                    updateEvent.setDate(getDateFomDateString(requestBodyJson.optString("date")));
+                    Optional.ofNullable(requestBodyJson.optJSONObject("location")).ifPresent(location -> updateEvent.setLocation(getLocationFromJson(location)));
+                    Optional.ofNullable(requestBodyJson.optString("description")).ifPresent(updateEvent::setDescription);
+                    Optional.ofNullable(requestBodyJson.optString("category")).ifPresent(updateEvent::setCategory);
+                    Optional.of(requestBodyJson.optInt("maxAttendees")).ifPresent(updateEvent::setMaxAttendees);
+                    Event updatedEvent = eventService.updateEvent(eventId, updateEvent);
+                    responseEntity = new ResponseEntity<>(mapper.toDto(updatedEvent), HttpStatus.CREATED);
+                }
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
+            responseEntity = new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return responseEntity;
+    }
+
+    private boolean validRequestBodyJson(JSONObject requestBodyJson, String necessaryKey) {
+        return !requestBodyJson.isEmpty() && requestBodyJson.has(necessaryKey) && requestBodyJson.get(necessaryKey) != JSONObject.NULL;
+    }
+    public Date getDateFomDateString(String dateString) throws ParseException {
+        Date date = null;
+        if (dateString != null && !dateString.isEmpty()) {
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-dd-MM'T'HH:mm:ss.SSSX");
+            format.setTimeZone(TimeZone.getTimeZone("UTC"));
+            date = format.parse(dateString);
         }
         return date;
     }

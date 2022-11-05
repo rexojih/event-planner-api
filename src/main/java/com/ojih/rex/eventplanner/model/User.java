@@ -102,8 +102,12 @@ public class User {
         this.email = email;
     }
 
+    public boolean isPassword(String password) {
+        return this.password.equals(password);
+    }
+
     public void updatePassword(String originalPassword, String newPassword) {
-        if (originalPassword.equals(password))
+        if (password.equals(originalPassword))
             this.password = newPassword;
     }
 

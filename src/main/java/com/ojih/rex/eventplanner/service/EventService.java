@@ -6,7 +6,6 @@ import com.ojih.rex.eventplanner.model.User;
 import com.ojih.rex.eventplanner.model.event.Event;
 import com.ojih.rex.eventplanner.repository.EventRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -15,35 +14,31 @@ import java.util.List;
 @Service
 public class EventService {
 
-    private EventRepository eventRepository;
-    private static final String UNABLE_TO_GET_EVENT = "Unable to fetch event ";
-    private static final String FROM_DB = " from DB";
+    private final EventRepository eventRepository;
+    private static final String NOT_FOUND = " not found in DB";
 
     @Autowired
     public EventService(EventRepository eventRepository) {
         this.eventRepository = eventRepository;
     }
 
-    public void storeEvent(Event event) {
-        eventRepository.save(event);
-    }
-
-    public void storeEventWithHost(User host, Event event) {
+    public Event storeEventWithHost(User host, Event event) {
         event.setHost(host);
-        eventRepository.save(event);
+        return eventRepository.save(event);
     }
 
-    public void storeEventWithAttendees(User host, Event event, List<User> attendees) {
+    public Event storeEventWithAttendees(User host, Event event, List<User> attendees) {
         event.setHost(host);
         event.setAttendees(attendees);
-        eventRepository.save(event);
+        return eventRepository.save(event);
     }
 
-    public void updateEvent(Long eventId, @Nullable String newTitle, @Nullable Date newDate, @Nullable Location location, @Nullable String description, @Nullable String category, @Nullable Integer maxAttendees) throws EventServiceException {
+    public Event updateEvent(Long eventId, Event updateEvent) throws EventServiceException {
         Event event = eventRepository.findDistinctByEventId(eventId);
         if (event == null)
-            throw new EventServiceException(UNABLE_TO_GET_EVENT + eventId + FROM_DB);
-        mapUpdate(event, newTitle, newDate, location, description, category, maxAttendees);
+            throw new EventServiceException("Unable to update event. EventId " + eventId + NOT_FOUND);
+        mapUpdate(event, updateEvent.getTitle(), updateEvent.getDate(), updateEvent.getLocation(), updateEvent.getDescription(), updateEvent.getCategory(), updateEvent.getMaxAttendees());
+        return eventRepository.save(event);
     }
 
     private void mapUpdate(Event event, String newTitle, Date newDate, Location newLocation, String newDescription, String newCategory, Integer newMaxAttendees) {
@@ -68,7 +63,7 @@ public class EventService {
     public void addEventAttendee(Long eventId, User newAttendee) throws EventServiceException {
         Event event = eventRepository.findDistinctByEventId(eventId);
         if (event == null)
-            throw new EventServiceException(UNABLE_TO_GET_EVENT + eventId + FROM_DB);
+            throw new EventServiceException("Unable to add attendee. EventId " + eventId + NOT_FOUND);
         event.addAttendee(newAttendee);
         eventRepository.save(event);
     }
@@ -76,7 +71,7 @@ public class EventService {
     public void addEventAttendees(Long eventId, List<User> newAttendees) throws EventServiceException {
         Event event = eventRepository.findDistinctByEventId(eventId);
         if (event == null)
-            throw new EventServiceException(UNABLE_TO_GET_EVENT + eventId + FROM_DB);
+            throw new EventServiceException("Unable to add attendees. EventId" + eventId + NOT_FOUND);
         event.addAttendees(newAttendees);
         eventRepository.save(event);
     }
