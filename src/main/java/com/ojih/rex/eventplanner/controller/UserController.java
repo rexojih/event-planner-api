@@ -1,6 +1,9 @@
 package com.ojih.rex.eventplanner.controller;
 
+import com.ojih.rex.eventplanner.exception.UserServiceException;
 import com.ojih.rex.eventplanner.model.Location;
+import com.ojih.rex.eventplanner.model.event.Event;
+import com.ojih.rex.eventplanner.model.event.EventDTO;
 import com.ojih.rex.eventplanner.model.user.User;
 import com.ojih.rex.eventplanner.model.user.UserDTO;
 import com.ojih.rex.eventplanner.service.UserService;
@@ -13,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -22,11 +26,13 @@ public class UserController {
 
     private final UserService userService;
     private final Mapper<UserDTO, User> userMapper;
+    private final Mapper<EventDTO, Event> eventMapper;
 
     @Autowired
-    public UserController(UserService userService, @Qualifier("userMapper") Mapper<UserDTO, User> userMapper) {
+    public UserController(UserService userService, @Qualifier("userMapper") Mapper<UserDTO, User> userMapper, @Qualifier("eventMapper") Mapper<EventDTO, Event> eventMapper) {
         this.userService = userService;
         this.userMapper = userMapper;
+        this.eventMapper = eventMapper;
     }
 
     @GetMapping("/get")
@@ -50,6 +56,33 @@ public class UserController {
             responseEntity = new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             e.printStackTrace();
+            responseEntity = new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return responseEntity;
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<UserDTO>> getUsers() {
+        return new ResponseEntity<>(userMapper.toDtos(userService.getUsers()), HttpStatus.OK);
+    }
+
+    @GetMapping("/events")
+    public ResponseEntity<Object> getUserEvents(@RequestParam(value = "id", required = false) Long userId,
+                                                    @RequestHeader(required = false) Map<String, String> requestHeaders,
+                                                    @RequestBody(required = false) String requestBody) {
+        ResponseEntity<Object> responseEntity;
+        try {
+            if (!requestBody.isBlank()) {
+                JSONObject requestBodyJson = new JSONObject(requestBody);
+                userId = requestBodyJson.getLong("userId");
+            }
+            User user = userService.getUserFromId(userId);
+            responseEntity = new ResponseEntity<>(eventMapper.toDtos(user.getEvents()), HttpStatus.OK);
+        } catch (JSONException e) {
+            responseEntity = new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (UserServiceException e) {
+            responseEntity = new ResponseEntity<>(e.getMessage(), HttpStatus.NO_CONTENT);
+        } catch (Exception e) {
             responseEntity = new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return responseEntity;

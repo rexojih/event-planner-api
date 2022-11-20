@@ -78,9 +78,8 @@ public class EventService {
 
     public Event getEventFromId(Long eventId) throws EventServiceException {
         Event event = eventRepository.findDistinctByEventId(eventId);
-        if (event == null) {
+        if (event == null)
             throw new EventServiceException("Unable to get event. EventId " + eventId + NOT_FOUND);
-        }
         return event;
     }
 

@@ -8,7 +8,7 @@ import java.util.Date;
 import java.util.List;
 
 @Repository
-interface EventRepository extends JpaRepository<Event, Long> {
+public interface EventRepository extends JpaRepository<Event, Long> {
 
     Event findDistinctByEventId(Long eventId);
     List<Event> findByTitle(String title);
