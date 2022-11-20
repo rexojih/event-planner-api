@@ -2,8 +2,8 @@ package com.ojih.rex.eventplanner.service;
 
 import com.ojih.rex.eventplanner.exception.EventServiceException;
 import com.ojih.rex.eventplanner.model.Location;
-import com.ojih.rex.eventplanner.model.user.User;
 import com.ojih.rex.eventplanner.model.event.Event;
+import com.ojih.rex.eventplanner.model.user.User;
 import com.ojih.rex.eventplanner.repository.EventRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,13 +22,13 @@ public class EventService {
         this.eventRepository = eventRepository;
     }
 
-    public Event storeEventWithHost(User host, Event event) {
-        event.setHost(host);
+    public Event storeEvent(User host, Event event) {
+        event.setHostId(host.getUserId());
         return eventRepository.save(event);
     }
 
     public Event storeEventWithAttendees(User host, Event event, List<User> attendees) {
-        event.setHost(host);
+        event.setHostId(host.getUserId());
         event.setAttendees(attendees);
         return eventRepository.save(event);
     }
@@ -60,20 +60,16 @@ public class EventService {
         return newMaxAttendees > 0 && newMaxAttendees >= event.getAttendees().size();
     }
 
-    public void addEventAttendee(Long eventId, User newAttendee) throws EventServiceException {
+    public Event addEventAttendee(Long eventId, User newAttendee) throws EventServiceException {
         Event event = eventRepository.findDistinctByEventId(eventId);
         if (event == null)
             throw new EventServiceException("Unable to add attendee. EventId " + eventId + NOT_FOUND);
         event.addAttendee(newAttendee);
-        eventRepository.save(event);
+        return eventRepository.save(event);
     }
 
-    public void addEventAttendees(Long eventId, List<User> newAttendees) throws EventServiceException {
-        Event event = eventRepository.findDistinctByEventId(eventId);
-        if (event == null)
-            throw new EventServiceException("Unable to add attendees. EventId " + eventId + NOT_FOUND);
-        event.addAttendees(newAttendees);
-        eventRepository.save(event);
+    public boolean eventExists(Long eventId) {
+        return eventRepository.existsById(eventId);
     }
 
     public List<Event> getEvents() {
@@ -83,17 +79,17 @@ public class EventService {
     public Event getEventFromId(Long eventId) throws EventServiceException {
         Event event = eventRepository.findDistinctByEventId(eventId);
         if (event == null) {
-            throw new EventServiceException("Unable to get attendees. EventId " + eventId + NOT_FOUND);
+            throw new EventServiceException("Unable to get event. EventId " + eventId + NOT_FOUND);
         }
         return event;
     }
 
-    public List<Event> getEventsFromHost(User host) {
-        return eventRepository.findByHost(host);
+    public List<Event> getEventsFromHostId(Long hostId) {
+        return eventRepository.findByHostId(hostId);
     }
 
-    public List<Event> getEventsFromHostByDate(User host) {
-        return eventRepository.findByHostOrderByDateDesc(host);
+    public List<Event> getEventsFromHostByDate(Long hostId) {
+        return eventRepository.findByHostIdOrderByDateDesc(hostId);
     }
 
     public List<Event> getEventsFromTitle(String title) {
@@ -206,5 +202,9 @@ public class EventService {
 
     public List<Event> getEventsFromStateAndPostalCodeByDate(String state, String postalCode) {
         return eventRepository.findByLocationStateAndLocationPostalCodeOrderByDateDesc(state, postalCode);
+    }
+
+    public void removeEvent(Long eventId) {
+        eventRepository.deleteById(eventId);
     }
 }

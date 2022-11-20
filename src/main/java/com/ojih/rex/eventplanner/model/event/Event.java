@@ -1,6 +1,5 @@
 package com.ojih.rex.eventplanner.model.event;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.ojih.rex.eventplanner.model.Location;
 import com.ojih.rex.eventplanner.model.user.User;
 import lombok.AllArgsConstructor;
@@ -48,20 +47,10 @@ public class Event {
             nullable = false
     )
     private String category;
-    @JsonManagedReference
-    @ManyToOne(
-            cascade = CascadeType.ALL,
-            fetch = FetchType.LAZY,
-            optional = false
-    )
-    @JoinColumn(
-            name = "host_id",
-            referencedColumnName = "userId"
-    )
-    private User host;
+    private Long hostId;
     private Integer maxAttendees;
     @ManyToMany(
-            cascade = CascadeType.ALL,
+            cascade = CascadeType.PERSIST,
             fetch = FetchType.LAZY
     )
     @JoinTable(
@@ -139,13 +128,12 @@ public class Event {
         this.description = description;
     }
 
-    public User getHost() {
-        return host;
+    public Long getHostId() {
+        return hostId;
     }
 
-    public void setHost(User host) {
-        this.host = host;
-        this.addAttendee(host);
+    public void setHostId(Long hostId) {
+        this.hostId = hostId;
     }
 
     public Integer getMaxAttendees() {

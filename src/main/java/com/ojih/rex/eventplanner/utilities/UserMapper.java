@@ -13,18 +13,22 @@ public class UserMapper implements Mapper<UserDTO, User> {
 
     @Override
     public UserDTO toDto(User user) {
-        List<Long> eventIds = new ArrayList<>();
+        List<Long> eventIds = null;
 
-        for (Event event : user.getEvents()) {
-            eventIds.add(event.getEventId());
+        if (user.getEvents() != null) {
+            eventIds = new ArrayList<>();
+            for (Event event : user.getEvents()) {
+                eventIds.add(event.getEventId());
+            }
         }
 
         return UserDTO.builder()
                 .userId(user.getUserId())
                 .userName(user.getUserName())
                 .firstName(user.getFirstName())
-                .lastNight(user.getLastName())
+                .lastName(user.getLastName())
                 .email(user.getEmail())
+                .location(user.getLocation())
                 .eventIds(eventIds)
                 .build();
     }

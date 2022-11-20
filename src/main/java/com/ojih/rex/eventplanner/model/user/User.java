@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -47,7 +46,7 @@ public class User {
             nullable = false
     )
     private String password;
-    public Location location;
+    private Location location;
     @ManyToMany(
             mappedBy = "attendees",
             fetch = FetchType.LAZY
@@ -124,13 +123,9 @@ public class User {
         return events;
     }
 
-    public void setEvents(List<Event> events) {
-        this.events = events;
-    }
-
-    public void addEventAttending(Event event) {
-        if (events == null) events = new ArrayList<>();
-        events.add(event);
+    public void addEvent(Event event) {
+        this.events.add(event);
+        event.addAttendee(this);
     }
 
     @Override

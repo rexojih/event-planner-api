@@ -1,5 +1,6 @@
 package com.ojih.rex.eventplanner.model.user;
 
+import com.ojih.rex.eventplanner.model.Location;
 import lombok.Builder;
 
 import java.util.List;
@@ -10,8 +11,9 @@ public class UserDTO {
     private Long userId;
     private String userName;
     private String firstName;
-    private String lastNight;
+    private String lastName;
     private String email;
+    private Location location;
     private List<Long> eventIds;
 
     public Long getUserId() {
@@ -38,12 +40,12 @@ public class UserDTO {
         this.firstName = firstName;
     }
 
-    public String getLastNight() {
-        return lastNight;
+    public String getLastName() {
+        return lastName;
     }
 
-    public void setLastNight(String lastNight) {
-        this.lastNight = lastNight;
+    public void setLastName(String lastNight) {
+        this.lastName = lastNight;
     }
 
     public String getEmail() {
@@ -52,6 +54,14 @@ public class UserDTO {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public Location getLocation() {
+        return location;
+    }
+
+    public void setLocation(Location location) {
+        this.location = location;
     }
 
     public List<Long> getEventIds() {

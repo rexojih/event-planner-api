@@ -1,7 +1,6 @@
 package com.ojih.rex.eventplanner.repository;
 
 import com.ojih.rex.eventplanner.model.event.Event;
-import com.ojih.rex.eventplanner.model.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -9,37 +8,37 @@ import java.util.Date;
 import java.util.List;
 
 @Repository
-public interface EventRepository extends JpaRepository<Event, Long> {
+interface EventRepository extends JpaRepository<Event, Long> {
 
-    public Event findDistinctByEventId(Long eventId);
-    public List<Event> findByTitle(String title);
-    public List<Event> findByTitleOrderByDateDesc(String title);
-    public List<Event> findByTitleContaining(String title);
-    public List<Event> findByTitleContainingOrderByDateDesc(String title);
-    public List<Event> findByDate(Date date);
-    public List<Event> findByDateAfter(Date date);
-    public List<Event> findByDateBefore(Date date);
-    public List<Event> findByDateBetween(Date after, Date before);
-    public List<Event> findByCategory(String category);
-    public List<Event> findByCategoryOrderByDateDesc(String category);
-    public List<Event> findByHost(User user);
-    public List<Event> findByHostOrderByDateDesc(User user);
-    public List<Event> findByLocationCity(String city);
-    public List<Event> findByLocationCityOrderByDateDesc(String city);
-    public List<Event> findByLocationState(String state);
-    public List<Event> findByLocationStateOrderByDateDesc(String state);
-    public List<Event> findByLocationPostalCode(String postalCOde);
-    public List<Event> findByLocationPostalCodeOrderByDateDesc(String postalCode);
-    public List<Event> findByLocationCityOrLocationState(String city, String state);
-    public List<Event> findByLocationCityOrLocationStateOrderByDateDesc(String city, String state);
-    public List<Event> findByLocationCityAndLocationState(String city, String state);
-    public List<Event> findByLocationCityAndLocationStateOrderByDateDesc(String city, String state);
-    public List<Event> findByLocationCityOrLocationPostalCode(String city, String postalCode);
-    public List<Event> findByLocationCityOrLocationPostalCodeOrderByDateDesc(String city, String postalCode);
-    public List<Event> findByLocationCityAndLocationPostalCode(String city, String postalCode);
-    public List<Event> findByLocationCityAndLocationPostalCodeOrderByDateDesc(String city, String postalCode);
-    public List<Event> findByLocationStateOrLocationPostalCode(String state, String postalCode);
-    public List<Event> findByLocationStateOrLocationPostalCodeOrderByDateDesc(String state, String postalCode);
-    public List<Event> findByLocationStateAndLocationPostalCode(String state, String postalCode);
-    public List<Event> findByLocationStateAndLocationPostalCodeOrderByDateDesc(String state, String postalCode);
+    Event findDistinctByEventId(Long eventId);
+    List<Event> findByTitle(String title);
+    List<Event> findByTitleOrderByDateDesc(String title);
+    List<Event> findByTitleContaining(String title);
+    List<Event> findByTitleContainingOrderByDateDesc(String title);
+    List<Event> findByDate(Date date);
+    List<Event> findByDateAfter(Date date);
+    List<Event> findByDateBefore(Date date);
+    List<Event> findByDateBetween(Date after, Date before);
+    List<Event> findByCategory(String category);
+    List<Event> findByCategoryOrderByDateDesc(String category);
+    List<Event> findByHostId(Long hostId);
+    List<Event> findByHostIdOrderByDateDesc(Long hostId);
+    List<Event> findByLocationCity(String city);
+    List<Event> findByLocationCityOrderByDateDesc(String city);
+    List<Event> findByLocationState(String state);
+    List<Event> findByLocationStateOrderByDateDesc(String state);
+    List<Event> findByLocationPostalCode(String postalCOde);
+    List<Event> findByLocationPostalCodeOrderByDateDesc(String postalCode);
+    List<Event> findByLocationCityOrLocationState(String city, String state);
+    List<Event> findByLocationCityOrLocationStateOrderByDateDesc(String city, String state);
+    List<Event> findByLocationCityAndLocationState(String city, String state);
+    List<Event> findByLocationCityAndLocationStateOrderByDateDesc(String city, String state);
+    List<Event> findByLocationCityOrLocationPostalCode(String city, String postalCode);
+    List<Event> findByLocationCityOrLocationPostalCodeOrderByDateDesc(String city, String postalCode);
+    List<Event> findByLocationCityAndLocationPostalCode(String city, String postalCode);
+    List<Event> findByLocationCityAndLocationPostalCodeOrderByDateDesc(String city, String postalCode);
+    List<Event> findByLocationStateOrLocationPostalCode(String state, String postalCode);
+    List<Event> findByLocationStateOrLocationPostalCodeOrderByDateDesc(String state, String postalCode);
+    List<Event> findByLocationStateAndLocationPostalCode(String state, String postalCode);
+    List<Event> findByLocationStateAndLocationPostalCodeOrderByDateDesc(String state, String postalCode);
 }

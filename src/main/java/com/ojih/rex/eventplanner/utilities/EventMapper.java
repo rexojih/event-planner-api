@@ -1,8 +1,8 @@
 package com.ojih.rex.eventplanner.utilities;
 
-import com.ojih.rex.eventplanner.model.user.User;
 import com.ojih.rex.eventplanner.model.event.Event;
 import com.ojih.rex.eventplanner.model.event.EventDTO;
+import com.ojih.rex.eventplanner.model.user.User;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -15,8 +15,10 @@ public class EventMapper implements Mapper<EventDTO, Event> {
     public EventDTO toDto(Event event) {
         List<Long> attendeeIds = new ArrayList<>();
 
-        for (User attendee : event.getAttendees()) {
-            attendeeIds.add(attendee.getUserId());
+        if (event.getAttendees() != null) {
+            for (User attendee : event.getAttendees()) {
+                attendeeIds.add(attendee.getUserId());
+            }
         }
 
         return EventDTO.builder()
@@ -26,7 +28,7 @@ public class EventMapper implements Mapper<EventDTO, Event> {
                 .location(event.getLocation())
                 .description(event.getDescription())
                 .category(event.getCategory())
-                .hostId(event.getHost().getUserId())
+                .hostId(event.getHostId())
                 .maxAttendees(event.getMaxAttendees())
                 .attendeeIds(attendeeIds)
                 .build();
