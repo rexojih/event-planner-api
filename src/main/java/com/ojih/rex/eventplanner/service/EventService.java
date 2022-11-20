@@ -24,12 +24,7 @@ public class EventService {
 
     public Event storeEvent(User host, Event event) {
         event.setHostId(host.getUserId());
-        return eventRepository.save(event);
-    }
-
-    public Event storeEventWithAttendees(User host, Event event, List<User> attendees) {
-        event.setHostId(host.getUserId());
-        event.setAttendees(attendees);
+        event.addAttendee(host);
         return eventRepository.save(event);
     }
 

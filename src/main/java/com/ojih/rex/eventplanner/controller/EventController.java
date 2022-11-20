@@ -136,7 +136,7 @@ public class EventController {
                                               @RequestBody String requestBody) {
         ResponseEntity<Object> responseEntity;
         try {
-            if (requestBody == null) {
+            if (requestBody.isBlank()) {
                 responseEntity = new ResponseEntity<>("Cannot update null event", HttpStatus.BAD_REQUEST);
             } else {
                 Event updateEvent = new Event();
@@ -152,7 +152,7 @@ public class EventController {
                     Optional.ofNullable(requestBodyJson.optString("category")).ifPresent(updateEvent::setCategory);
                     Optional.of(requestBodyJson.optInt("maxAttendees")).ifPresent(updateEvent::setMaxAttendees);
                     Event updatedEvent = eventService.updateEvent(eventId, updateEvent);
-                    responseEntity = new ResponseEntity<>(eventMapper.toDto(updatedEvent), HttpStatus.CREATED);
+                    responseEntity = new ResponseEntity<>(eventMapper.toDto(updatedEvent), HttpStatus.OK);
                 }
             }
         } catch (JSONException e) {

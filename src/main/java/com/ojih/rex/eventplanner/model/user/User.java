@@ -103,12 +103,7 @@ public class User {
     }
 
     public boolean isPassword(String password) {
-        return this.password.equals(password);
-    }
-
-    public void updatePassword(String originalPassword, String newPassword) {
-        if (password.equals(originalPassword))
-            this.password = newPassword;
+        return password.equals(this.password);
     }
 
     public Location getLocation() {

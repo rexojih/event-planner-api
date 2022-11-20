@@ -1,6 +1,7 @@
 package com.ojih.rex.eventplanner.service;
 
 import com.ojih.rex.eventplanner.exception.UserServiceException;
+import com.ojih.rex.eventplanner.model.Location;
 import com.ojih.rex.eventplanner.model.event.Event;
 import com.ojih.rex.eventplanner.model.user.User;
 import com.ojih.rex.eventplanner.repository.UserRepository;
@@ -28,6 +29,31 @@ public class UserService {
 
     public User storeUser(User user) {
         return userRepository.save(user);
+    }
+
+    public User updateUser(Long userId, User updateUser, String originalPassword) throws UserServiceException {
+        User user = userRepository.findDistinctByUserId(userId);
+        if (user == null)
+            throw new UserServiceException("Unable to update user. UserId " + userId + " not found.");
+        mapUpdate(user, updateUser.getUserName(), updateUser.getPassword(), originalPassword, updateUser.getFirstName(), updateUser.getLastName(), updateUser.getLocation());
+        return userRepository.save(user);
+    }
+
+    private void mapUpdate(User user, String newUserName, String newPassword, String originalPassword, String newFirstName, String newLastName, Location newLocation) {
+        if (newUserName != null)
+            user.setUserName(newUserName);
+        if (validPasswordChange(user, newPassword, originalPassword))
+            user.setPassword(newPassword);
+        if (newFirstName != null)
+            user.setFirstName(newFirstName);
+        if (newLastName != null)
+            user.setLastName(newLastName);
+        if (newLocation != null)
+            user.setLocation(newLocation);
+    }
+
+    private boolean validPasswordChange(User user, String newPassword, String originalPassword) {
+        return newPassword != null && originalPassword != null && !newPassword.isBlank() && !originalPassword.isBlank() && user.isPassword(originalPassword);
     }
 
     public boolean userExists(Long userId) {

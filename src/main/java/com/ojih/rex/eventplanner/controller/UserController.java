@@ -117,6 +117,40 @@ public class UserController {
         return responseEntity;
     }
 
+    @PutMapping("/update")
+    public ResponseEntity<Object> updateUser(@RequestHeader(required = false) Map<String, String> requestHeaders,
+                                              @RequestBody String requestBody) {
+        ResponseEntity<Object> responseEntity;
+        try {
+            if (requestBody.isBlank()) {
+                responseEntity = new ResponseEntity<>("Cannot update null user", HttpStatus.BAD_REQUEST);
+            } else {
+                User updateUser = new User();
+                JSONObject requestBodyJson = new JSONObject(requestBody);
+                if (!validRequestBodyJson(requestBodyJson, "userId")) {
+                    responseEntity = new ResponseEntity<>("Unable to update user with no userId", HttpStatus.BAD_REQUEST);
+                } else {
+                    Long userId = requestBodyJson.getLong("userId");
+                    Optional.ofNullable(requestBodyJson.optString("userName")).ifPresent(updateUser::setUserName);
+                    Optional.ofNullable(requestBodyJson.optString("firstName")).ifPresent(updateUser::setFirstName);
+                    Optional.ofNullable(requestBodyJson.optString("lastName")).ifPresent(updateUser::setLastName);
+                    Optional.ofNullable(requestBodyJson.optString("email")).ifPresent(updateUser::setEmail);
+                    Optional.ofNullable(requestBodyJson.optString("password")).ifPresent(updateUser::setPassword);
+                    Optional.ofNullable(requestBodyJson.optJSONObject("location")).ifPresent(location -> updateUser.setLocation(getLocationFromJson(location)));
+                    String originalPassword = requestBodyJson.optString("originalPassword");
+                    User updatedUser = userService.updateUser(userId, updateUser, originalPassword);
+                    responseEntity = new ResponseEntity<>(userMapper.toDto(updatedUser), HttpStatus.OK);
+                }
+            }
+        } catch (JSONException e) {
+            responseEntity = new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            e.printStackTrace();
+            responseEntity = new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return responseEntity;
+    }
+
     public Location getLocationFromJson(JSONObject locationJson) {
         Location location = new Location();
         Optional.ofNullable(locationJson.optString("streetAddress")).ifPresent(location::setStreetAddress);
@@ -124,5 +158,13 @@ public class UserController {
         Optional.ofNullable(locationJson.optString("state")).ifPresent(location::setState);
         Optional.ofNullable(locationJson.optString("postalCode")).ifPresent(location::setPostalCode);
         return location;
+    }
+
+    private boolean validRequestBodyJson(JSONObject requestBodyJson, String... necessaryKeys) {
+        boolean result = false;
+        for (String key : necessaryKeys) {
+            result = !requestBodyJson.isEmpty() && requestBodyJson.has(key) && requestBodyJson.get(key) != JSONObject.NULL;
+        }
+        return result;
     }
 }
