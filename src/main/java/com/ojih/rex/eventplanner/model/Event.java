@@ -62,30 +62,6 @@ public class Event {
     )
     private List<User> attendees;
 
-    public Event(String title, Date date, Location location, String category) {
-        this.title = title;
-        this.date = date;
-        this.location = location;
-        this.category = category;
-    }
-
-    public Event(String title, Date date, Location location, String description, String category) {
-        this.title = title;
-        this.date = date;
-        this.location = location;
-        this.description = description;
-        this.category = category;
-    }
-
-    public Event(String title, Date date, Location location, String description, String category, Integer maxAttendees) {
-        this.title = title;
-        this.date = date;
-        this.location = location;
-        this.description = description;
-        this.category = category;
-        this.maxAttendees = maxAttendees;
-    }
-
     public Long getEventId() {
         return eventId;
     }

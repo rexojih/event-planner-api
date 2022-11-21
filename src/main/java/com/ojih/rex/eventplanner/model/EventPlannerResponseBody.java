@@ -1,7 +1,9 @@
 package com.ojih.rex.eventplanner.model;
 
 import com.ojih.rex.eventplanner.model.dto.DTO;
+import lombok.AllArgsConstructor;
 
+@AllArgsConstructor
 public class EventPlannerResponseBody {
 
     String responseMessage;
@@ -13,11 +15,6 @@ public class EventPlannerResponseBody {
 
     public EventPlannerResponseBody(String responseMessage) {
         this.responseMessage = responseMessage;
-    }
-
-    public EventPlannerResponseBody(String responseMessage, DTO... data) {
-        this.responseMessage = responseMessage;
-        this.data = data;
     }
 
     public String getResponseMessage() {

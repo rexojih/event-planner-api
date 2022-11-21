@@ -37,7 +37,10 @@ public class EventController {
 
 
     @Autowired
-    public EventController(EventService eventService, UserService userService, @Qualifier("eventMapper") Mapper<EventDTO, Event> eventMapper, @Qualifier("userMapper") Mapper<UserDTO, User> userMapper) {
+    public EventController(EventService eventService,
+                           UserService userService,
+                           @Qualifier("eventMapper") Mapper<EventDTO, Event> eventMapper,
+                           @Qualifier("userMapper") Mapper<UserDTO, User> userMapper) {
         this.eventService = eventService;
         this.userService = userService;
         this.eventMapper = eventMapper;
@@ -82,7 +85,7 @@ public class EventController {
 
     @GetMapping("/getFromIds")
     public ResponseEntity<EventPlannerResponseBody> getEventsFromIds(@RequestHeader(required = false) Map<String, String> requestHeaders,
-                                           @RequestBody(required = false) String requestBody) {
+                                                                     @RequestBody(required = false) String requestBody) {
         EventPlannerResponseBody responseBody;
         ResponseEntity<EventPlannerResponseBody> responseEntity;
         try{
@@ -127,14 +130,13 @@ public class EventController {
         List<Event> events = eventService.getEvents();
         EventDTO [] eventDTOs = new EventDTO[events.size()];
         EventPlannerResponseBody responseBody = new EventPlannerResponseBody(SUCCESS, eventMapper.toDtos(events).toArray(eventDTOs));
-
         return new ResponseEntity<>(responseBody, HttpStatus.OK);
     }
 
     @GetMapping("/attendees")
     public ResponseEntity<EventPlannerResponseBody> getEventAttendees(@RequestParam(value = "id", required = false) Long eventId,
-                                                        @RequestHeader(required = false) Map<String, String> requestHeaders,
-                                                        @RequestBody(required = false) String requestBody) {
+                                                                      @RequestHeader(required = false) Map<String, String> requestHeaders,
+                                                                      @RequestBody(required = false) String requestBody) {
         EventPlannerResponseBody responseBody;
         ResponseEntity<EventPlannerResponseBody> responseEntity;
         try {
@@ -162,7 +164,7 @@ public class EventController {
 
     @PostMapping("/add")
     public ResponseEntity<EventPlannerResponseBody> postEvent(@RequestHeader(required = false) Map<String, String> requestHeaders,
-                                            @RequestBody String requestBody) {
+                                                              @RequestBody String requestBody) {
         EventPlannerResponseBody responseBody;
         ResponseEntity<EventPlannerResponseBody> responseEntity;
         try {
@@ -202,7 +204,7 @@ public class EventController {
 
     @PutMapping("/update")
     public ResponseEntity<EventPlannerResponseBody> updateEvent(@RequestHeader(required = false) Map<String, String> requestHeaders,
-                                              @RequestBody String requestBody) {
+                                                                @RequestBody String requestBody) {
         EventPlannerResponseBody responseBody;
         ResponseEntity<EventPlannerResponseBody> responseEntity;
         try {
@@ -241,7 +243,7 @@ public class EventController {
 
     @PutMapping("/addAttendee")
     public ResponseEntity<EventPlannerResponseBody> addEventAttendee(@RequestHeader(required = false) Map<String, String> requestHeaders,
-                                              @RequestBody String requestBody) {
+                                                                     @RequestBody String requestBody) {
         EventPlannerResponseBody responseBody;
         ResponseEntity<EventPlannerResponseBody> responseEntity;
         try {
@@ -282,8 +284,8 @@ public class EventController {
 
     @DeleteMapping("/delete")
     public ResponseEntity<EventPlannerResponseBody> deleteEvent(@RequestParam(value = "id", required = false) Long eventId,
-                                        @RequestHeader(required = false) Map<String, String> requestHeaders,
-                                        @RequestBody(required = false) String requestBody) {
+                                                                @RequestHeader(required = false) Map<String, String> requestHeaders,
+                                                                @RequestBody(required = false) String requestBody) {
         EventPlannerResponseBody responseBody;
         ResponseEntity<EventPlannerResponseBody> responseEntity;
         try {

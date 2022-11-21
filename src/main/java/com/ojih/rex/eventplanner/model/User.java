@@ -51,23 +51,6 @@ public class User {
     )
     private List<Event> events;
 
-    public User(String userName, String firstName, String lastName, String email, String password) {
-        this.userName = userName;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-        this.password = password;
-    }
-
-    public User(String userName, String firstName, String lastName, String email, String password, Location location) {
-        this.userName = userName;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-        this.password = password;
-        this.location = location;
-    }
-
     public Long getUserId() {
         return userId;
     }

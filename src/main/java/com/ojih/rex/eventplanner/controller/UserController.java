@@ -35,7 +35,10 @@ public class UserController {
     private final Mapper<EventDTO, Event> eventMapper;
 
     @Autowired
-    public UserController(UserService userService, EventService eventService, @Qualifier("userMapper") Mapper<UserDTO, User> userMapper, @Qualifier("eventMapper") Mapper<EventDTO, Event> eventMapper) {
+    public UserController(UserService userService,
+                          EventService eventService,
+                          @Qualifier("userMapper") Mapper<UserDTO, User> userMapper,
+                          @Qualifier("eventMapper") Mapper<EventDTO, Event> eventMapper) {
         this.userService = userService;
         this.userMapper = userMapper;
         this.eventMapper = eventMapper;
@@ -44,8 +47,8 @@ public class UserController {
 
     @GetMapping("/get")
     public ResponseEntity<EventPlannerResponseBody> getUser(@RequestParam(value = "id", required = false) Long userId,
-                                           @RequestHeader(required = false) Map<String, String> requestHeaders,
-                                           @RequestBody(required = false) String requestBody) {
+                                                            @RequestHeader(required = false) Map<String, String> requestHeaders,
+                                                            @RequestBody(required = false) String requestBody) {
         EventPlannerResponseBody responseBody;
         ResponseEntity<EventPlannerResponseBody> responseEntity;
         try {
@@ -84,8 +87,8 @@ public class UserController {
 
     @GetMapping("/events")
     public ResponseEntity<EventPlannerResponseBody> getUserEvents(@RequestParam(value = "id", required = false) Long userId,
-                                                    @RequestHeader(required = false) Map<String, String> requestHeaders,
-                                                    @RequestBody(required = false) String requestBody) {
+                                                                  @RequestHeader(required = false) Map<String, String> requestHeaders,
+                                                                  @RequestBody(required = false) String requestBody) {
         EventPlannerResponseBody responseBody;
         ResponseEntity<EventPlannerResponseBody> responseEntity;
         try {
@@ -113,7 +116,7 @@ public class UserController {
 
     @PostMapping("/add")
     public ResponseEntity<EventPlannerResponseBody> postUser(@RequestHeader(required = false) Map<String, String> requestHeaders,
-                                            @RequestBody String requestBody) {
+                                                             @RequestBody String requestBody) {
         EventPlannerResponseBody responseBody;
         ResponseEntity<EventPlannerResponseBody> responseEntity;
 
