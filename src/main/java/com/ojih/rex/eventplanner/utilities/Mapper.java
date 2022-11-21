@@ -4,6 +4,6 @@ import java.util.List;
 
 public interface Mapper<T, K> {
 
-    public T toDto(K k);
-    public List<T> toDtos(List<K> ks);
+    T toDto(K k);
+    List<T> toDtos(List<K> ks);
 }
