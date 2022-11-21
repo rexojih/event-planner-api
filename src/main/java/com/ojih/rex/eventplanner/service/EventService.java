@@ -86,6 +86,20 @@ public class EventService {
         return events;
     }
 
+    public List<Event> getUpcomingEventsFromIds(List<Long> eventIds) throws EventServiceException {
+        List<Event> events = eventRepository.findByEventIdInAndDateAfter(eventIds, new Date());
+        if (events.isEmpty())
+            throw new EventServiceException("Unable to get events. No events found with eventIds: " + eventIds);
+        return events;
+    }
+
+    public List<Event> getPastEventsFromIds(List<Long> eventIds) throws EventServiceException {
+        List<Event> events = eventRepository.findByEventIdInAndDateBefore(eventIds, new Date());
+        if (events.isEmpty())
+            throw new EventServiceException("Unable to get events. No events found with eventIds: " + eventIds);
+        return events;
+    }
+
     public List<Event> getEventsFromHostId(Long hostId) {
         return eventRepository.findByHostId(hostId);
     }

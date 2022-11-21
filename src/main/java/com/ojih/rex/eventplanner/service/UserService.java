@@ -24,7 +24,7 @@ public class UserService {
     public User getUserFromId(Long userId) throws UserServiceException {
         User user = userRepository.findDistinctByUserId(userId);
         if (user == null)
-            throw new UserServiceException("Unable to get event. EventId " + userId +" not found");
+            throw new UserServiceException("Unable to get user. UserId " + userId +" not found");
         return user;
     }
 

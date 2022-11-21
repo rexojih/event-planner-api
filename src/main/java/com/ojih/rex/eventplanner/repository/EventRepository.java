@@ -14,6 +14,8 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 
     Event findDistinctByEventId(Long eventId);
     List<Event> findByEventIdIn(List<Long> eventIds);
+    List<Event> findByEventIdInAndDateAfter(List<Long> eventIds, Date after);
+    List<Event> findByEventIdInAndDateBefore(List<Long> eventIds, Date before);
     List<Event> findByTitle(String title);
     List<Event> findByTitleOrderByDateDesc(String title);
     List<Event> findByTitleContaining(String title);

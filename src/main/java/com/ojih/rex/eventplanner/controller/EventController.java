@@ -91,8 +91,10 @@ public class EventController {
                 responseBody = new EventPlannerResponseBody("Unable to get events using null eventIds");
                 responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
             } else {
-                JSONArray requestBodyJson = new JSONArray(requestBody);
-                List<Object> eventIdObjects = requestBodyJson.toList();
+                JSONObject requestBodyJson = new JSONObject(requestBody);
+                String fetchStrategy = requestBodyJson.optString("strategy");
+                JSONArray eventIdJsonArray = requestBodyJson.getJSONArray("eventIds");
+                List<Object> eventIdObjects = eventIdJsonArray.toList();
                 List<Long> eventIds = new ArrayList<>();
                 for (Object eventIdObject : eventIdObjects) {
                     Integer eventId = (Integer) eventIdObject;
@@ -102,7 +104,13 @@ public class EventController {
                     responseBody = new EventPlannerResponseBody("Unable to get events from empty eventId list");
                     responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
                 } else {
-                    List<Event> events = eventService.getEventsFromIds(eventIds);
+                    List<Event> events;
+                    if (UPCOMING.equals(fetchStrategy))
+                        events = eventService.getUpcomingEventsFromIds(eventIds);
+                    else if (PAST.equals(fetchStrategy))
+                        events = eventService.getPastEventsFromIds(eventIds);
+                    else
+                        events = eventService.getEventsFromIds(eventIds);
                     EventDTO [] eventDTOs = new EventDTO[events.size()];
                     responseBody = new EventPlannerResponseBody(SUCCESS, eventMapper.toDtos(events).toArray(eventDTOs));
                     responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
