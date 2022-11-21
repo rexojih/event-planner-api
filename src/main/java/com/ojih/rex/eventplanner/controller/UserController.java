@@ -2,12 +2,13 @@ package com.ojih.rex.eventplanner.controller;
 
 import com.ojih.rex.eventplanner.constants.EventPlannerConstants;
 import com.ojih.rex.eventplanner.exception.UserServiceException;
+import com.ojih.rex.eventplanner.model.Event;
 import com.ojih.rex.eventplanner.model.EventPlannerResponseBody;
 import com.ojih.rex.eventplanner.model.Location;
-import com.ojih.rex.eventplanner.model.Event;
-import com.ojih.rex.eventplanner.model.dto.EventDTO;
 import com.ojih.rex.eventplanner.model.User;
+import com.ojih.rex.eventplanner.model.dto.EventDTO;
 import com.ojih.rex.eventplanner.model.dto.UserDTO;
+import com.ojih.rex.eventplanner.service.EventService;
 import com.ojih.rex.eventplanner.service.UserService;
 import com.ojih.rex.eventplanner.utilities.Mapper;
 import org.json.JSONException;
@@ -22,19 +23,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static com.ojih.rex.eventplanner.constants.EventPlannerConstants.USER_ID;
+
 @RestController
 @RequestMapping("/api/v1/user")
 public class UserController {
 
     private final UserService userService;
+    private final EventService eventService;
     private final Mapper<UserDTO, User> userMapper;
     private final Mapper<EventDTO, Event> eventMapper;
 
     @Autowired
-    public UserController(UserService userService, @Qualifier("userMapper") Mapper<UserDTO, User> userMapper, @Qualifier("eventMapper") Mapper<EventDTO, Event> eventMapper) {
+    public UserController(UserService userService, EventService eventService, @Qualifier("userMapper") Mapper<UserDTO, User> userMapper, @Qualifier("eventMapper") Mapper<EventDTO, Event> eventMapper) {
         this.userService = userService;
         this.userMapper = userMapper;
         this.eventMapper = eventMapper;
+        this.eventService = eventService;
     }
 
     @GetMapping("/get")
@@ -176,6 +181,40 @@ public class UserController {
             e.printStackTrace();
             responseBody = new EventPlannerResponseBody(e.getMessage());
             responseEntity = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return responseEntity;
+    }
+
+    @DeleteMapping("/delete")
+    public ResponseEntity<EventPlannerResponseBody> deleteEvent(@RequestParam(value = "id", required = false) Long userId,
+                                                                @RequestHeader(required = false) Map<String, String> requestHeaders,
+                                                                @RequestBody(required = false) String requestBody) {
+        EventPlannerResponseBody responseBody;
+        ResponseEntity<EventPlannerResponseBody> responseEntity;
+        try {
+            if (!(requestBody == null || requestBody.isBlank())) {
+                JSONObject requestBodyJson = new JSONObject(requestBody);
+                userId = requestBodyJson.getLong(USER_ID);
+            }
+            if (userService.userExists(userId)) {
+                List<Long> eventIds = userService.eventsHosting(userId);
+                if (eventIds != null) {
+                    eventService.removeEvents(eventIds);
+                }
+                userService.removeUser(userId);
+                responseBody = new EventPlannerResponseBody("User " + userId + " and it's Event(s) " + eventIds + " removed.");
+                responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
+            } else {
+                responseBody = new EventPlannerResponseBody("User " + userId + " does not exist");
+                responseEntity = new ResponseEntity<>(responseBody, HttpStatus.NOT_FOUND);
+            }
+        } catch (JSONException e) {
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
+        }catch (Exception e) {
+            e.printStackTrace();
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);;
         }
         return responseEntity;
     }

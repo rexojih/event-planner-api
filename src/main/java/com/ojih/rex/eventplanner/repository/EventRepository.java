@@ -2,6 +2,8 @@ package com.ojih.rex.eventplanner.repository;
 
 import com.ojih.rex.eventplanner.model.Event;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.Date;
@@ -42,4 +44,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     List<Event> findByLocationStateOrLocationPostalCodeOrderByDateDesc(String state, String postalCode);
     List<Event> findByLocationStateAndLocationPostalCode(String state, String postalCode);
     List<Event> findByLocationStateAndLocationPostalCodeOrderByDateDesc(String state, String postalCode);
+    @Modifying
+    @Query("delete from Event e where e.id in ?1")
+    void deleteEventsWithId(List<Long> eventIds);
 }

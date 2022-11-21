@@ -1,12 +1,14 @@
 package com.ojih.rex.eventplanner.service;
 
 import com.ojih.rex.eventplanner.exception.UserServiceException;
+import com.ojih.rex.eventplanner.model.Event;
 import com.ojih.rex.eventplanner.model.Location;
 import com.ojih.rex.eventplanner.model.User;
 import com.ojih.rex.eventplanner.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -61,6 +63,19 @@ public class UserService {
 
     public List<User> getUsers() {
         return userRepository.findAll();
+    }
+
+    public List<Long> eventsHosting(Long userId) {
+        List<Long> eventIds = null;
+        User user = userRepository.findDistinctByUserId(userId);
+        if (!(user.getEvents() == null || user.getEvents().isEmpty())) {
+            eventIds = new ArrayList<>();
+            for (Event event : user.getEvents()) {
+                if (event.getHostId().equals(userId))
+                    eventIds.add(event.getEventId());
+            }
+        }
+        return eventIds;
     }
 
     public void removeUser(Long userId) {

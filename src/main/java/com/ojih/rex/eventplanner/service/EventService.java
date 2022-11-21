@@ -8,6 +8,7 @@ import com.ojih.rex.eventplanner.repository.EventRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.Date;
 import java.util.List;
 
@@ -207,5 +208,10 @@ public class EventService {
 
     public void removeEvent(Long eventId) {
         eventRepository.deleteById(eventId);
+    }
+
+    @Transactional
+    public void removeEvents(List<Long> eventIds) {
+        eventRepository.deleteEventsWithId(eventIds);
     }
 }
