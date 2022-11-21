@@ -1,6 +1,5 @@
 package com.ojih.rex.eventplanner.controller;
 
-import com.ojih.rex.eventplanner.constants.EventPlannerConstants;
 import com.ojih.rex.eventplanner.exception.UserServiceException;
 import com.ojih.rex.eventplanner.model.Event;
 import com.ojih.rex.eventplanner.model.EventPlannerResponseBody;
@@ -23,7 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.ojih.rex.eventplanner.constants.EventPlannerConstants.*;
+import static com.ojih.rex.eventplanner.constants.EventPlannerConstants.SUCCESS;
+import static com.ojih.rex.eventplanner.constants.EventPlannerConstants.USER_ID;
 
 @RestController
 @RequestMapping("/api/v1/user")

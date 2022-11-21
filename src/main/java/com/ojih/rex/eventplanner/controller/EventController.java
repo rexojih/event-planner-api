@@ -1,6 +1,5 @@
 package com.ojih.rex.eventplanner.controller;
 
-import com.ojih.rex.eventplanner.constants.EventPlannerConstants;
 import com.ojih.rex.eventplanner.exception.EventServiceException;
 import com.ojih.rex.eventplanner.model.Event;
 import com.ojih.rex.eventplanner.model.EventPlannerResponseBody;
