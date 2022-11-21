@@ -29,4 +29,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findByLocationCityAndLocationPostalCode(String city, String postalCode);
     List<User> findByLocationStateOrLocationPostalCode(String state, String postalCode);
     List<User> findByLocationStateAndLocationPostalCode(String state, String postalCode);
+    boolean existsByUserName(String userName);
+    boolean existsByEmail(String email);
 }

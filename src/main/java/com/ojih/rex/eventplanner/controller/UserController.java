@@ -172,6 +172,9 @@ public class UserController {
                 responseBody = new EventPlannerResponseBody(SUCCESS, userMapper.toDto(storedUser));
                 responseEntity = new ResponseEntity<>(responseBody, HttpStatus.CREATED);
             }
+        } catch (UserServiceException | JSONException e) {
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             e.printStackTrace();
             responseBody = new EventPlannerResponseBody(e.getMessage());

@@ -47,7 +47,13 @@ public class UserService {
         return users;
     }
 
-    public User storeUser(User user) {
+    public User storeUser(User user) throws UserServiceException {
+        if (!uniqueUserName(user.getUserName()) && !uniqueEmail(user.getEmail()))
+            throw new UserServiceException("Username and email are already being used.");
+        else if (!uniqueUserName(user.getUserName()))
+            throw new UserServiceException("Username is already being used");
+        else if (!uniqueEmail(user.getEmail()))
+            throw new UserServiceException("Email is already being used");
         return userRepository.save(user);
     }
 
@@ -80,6 +86,14 @@ public class UserService {
 
     public boolean userExists(Long userId) {
         return userRepository.existsById(userId);
+    }
+
+    private boolean uniqueUserName(String userName) {
+        return !userRepository.existsByUserName(userName);
+    }
+
+    private boolean uniqueEmail(String email) {
+        return !userRepository.existsByEmail(email);
     }
 
     public List<User> getUsers() {
