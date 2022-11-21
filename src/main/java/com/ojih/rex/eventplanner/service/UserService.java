@@ -40,7 +40,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    private void mapUpdate(User user, String newUserName, String newPassword, String originalPassword, String newFirstName, String newLastName, Location newLocation) {
+    private void mapUpdate(User user, String newUserName, String newPassword, String originalPassword, String newFirstName, String newLastName, Location newLocation) throws UserServiceException {
         if (newUserName != null)
             user.setUserName(newUserName);
         if (validPasswordChange(user, newPassword, originalPassword))
@@ -53,8 +53,10 @@ public class UserService {
             user.setLocation(newLocation);
     }
 
-    private boolean validPasswordChange(User user, String newPassword, String originalPassword) {
-        return newPassword != null && originalPassword != null && !newPassword.isBlank() && !originalPassword.isBlank() && user.isPassword(originalPassword);
+    private boolean validPasswordChange(User user, String newPassword, String originalPassword) throws UserServiceException {
+        if (newPassword != null && !user.isPassword(originalPassword))
+            throw new UserServiceException("Unable to update user password. Incorrect original password");
+        return newPassword != null && !newPassword.isBlank() && user.isPassword(originalPassword);
     }
 
     public boolean userExists(Long userId) {

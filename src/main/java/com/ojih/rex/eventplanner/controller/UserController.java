@@ -169,7 +169,7 @@ public class UserController {
                     Optional.ofNullable(requestBodyJson.optString("firstName")).ifPresent(updateUser::setFirstName);
                     Optional.ofNullable(requestBodyJson.optString("lastName")).ifPresent(updateUser::setLastName);
                     Optional.ofNullable(requestBodyJson.optString("email")).ifPresent(updateUser::setEmail);
-                    Optional.ofNullable(requestBodyJson.optString("password")).ifPresent(updateUser::setPassword);
+                    Optional.ofNullable(requestBodyJson.optString("newPassword")).ifPresent(updateUser::setPassword);
                     Optional.ofNullable(requestBodyJson.optJSONObject("location")).ifPresent(location -> updateUser.setLocation(getLocationFromJson(location)));
                     String originalPassword = requestBodyJson.optString("originalPassword");
                     User updatedUser = userService.updateUser(userId, updateUser, originalPassword);
@@ -180,6 +180,9 @@ public class UserController {
         } catch (JSONException e) {
             responseBody = new EventPlannerResponseBody(e.getMessage());
             responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
+        } catch (UserServiceException e) {
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.UNAUTHORIZED);
         } catch (Exception e) {
             e.printStackTrace();
             responseBody = new EventPlannerResponseBody(e.getMessage());

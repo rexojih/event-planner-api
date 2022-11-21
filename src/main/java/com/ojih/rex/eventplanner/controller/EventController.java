@@ -34,8 +34,6 @@ public class EventController {
     private final Mapper<EventDTO, Event> eventMapper;
     private final Mapper<UserDTO, User> userMapper;
 
-
-
     @Autowired
     public EventController(EventService eventService,
                            UserService userService,
@@ -251,9 +249,7 @@ public class EventController {
                 responseBody = new EventPlannerResponseBody("Cannot add attendee to null event");
                 responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
             } else {
-                Event updateEvent = new Event();
                 JSONObject requestBodyJson = new JSONObject(requestBody);
-
                 if (!validRequestBodyJson(requestBodyJson, EVENT_ID, USER_ID)) {
                     responseBody = new EventPlannerResponseBody("Unable to add attendee to event with no eventId or userId");
                     responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
