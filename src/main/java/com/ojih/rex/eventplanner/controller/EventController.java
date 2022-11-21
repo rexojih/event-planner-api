@@ -24,8 +24,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static com.ojih.rex.eventplanner.constants.EventPlannerConstants.EVENT_ID;
-import static com.ojih.rex.eventplanner.constants.EventPlannerConstants.USER_ID;
+import static com.ojih.rex.eventplanner.constants.EventPlannerConstants.*;
 
 @RestController
 @RequestMapping("/api/v1/event")
@@ -60,7 +59,7 @@ public class EventController {
             Event event = eventService.getEventFromId(eventId);
 
             if (event != null) {
-                responseBody = new EventPlannerResponseBody(EventPlannerConstants.SUCCESS, eventMapper.toDto(event));
+                responseBody = new EventPlannerResponseBody(SUCCESS, eventMapper.toDto(event));
                 responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
             }
             else {
@@ -105,7 +104,7 @@ public class EventController {
                 } else {
                     List<Event> events = eventService.getEventsFromIds(eventIds);
                     EventDTO [] eventDTOs = new EventDTO[events.size()];
-                    responseBody = new EventPlannerResponseBody(EventPlannerConstants.SUCCESS, eventMapper.toDtos(events).toArray(eventDTOs));
+                    responseBody = new EventPlannerResponseBody(SUCCESS, eventMapper.toDtos(events).toArray(eventDTOs));
                     responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
                 }
             }
@@ -128,7 +127,7 @@ public class EventController {
     public ResponseEntity<EventPlannerResponseBody> getAllEvents() {
         List<Event> events = eventService.getEvents();
         EventDTO [] eventDTOs = new EventDTO[events.size()];
-        EventPlannerResponseBody responseBody = new EventPlannerResponseBody(EventPlannerConstants.SUCCESS, eventMapper.toDtos(events).toArray(eventDTOs));
+        EventPlannerResponseBody responseBody = new EventPlannerResponseBody(SUCCESS, eventMapper.toDtos(events).toArray(eventDTOs));
 
         return new ResponseEntity<>(responseBody, HttpStatus.OK);
     }
@@ -147,7 +146,7 @@ public class EventController {
             Event event = eventService.getEventFromId(eventId);
             List<User> users = event.getAttendees();
             UserDTO [] userDTOs = new UserDTO[users.size()];
-            responseBody = new EventPlannerResponseBody(EventPlannerConstants.SUCCESS, userMapper.toDtos(users).toArray(userDTOs));
+            responseBody = new EventPlannerResponseBody(SUCCESS, userMapper.toDtos(users).toArray(userDTOs));
             responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
         } catch (JSONException e) {
             responseBody = new EventPlannerResponseBody(e.getMessage());
@@ -174,11 +173,11 @@ public class EventController {
             } else {
                 Event event = new Event();
                 JSONObject requestBodyJson = new JSONObject(requestBody);
-                if (!validRequestBodyJson(requestBodyJson, EventPlannerConstants.HOST_ID)) {
+                if (!validRequestBodyJson(requestBodyJson, HOST_ID)) {
                     responseBody = new EventPlannerResponseBody("Unable to add event with no host");
                     responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
                 } else {
-                    Long hostId = requestBodyJson.getLong(EventPlannerConstants.HOST_ID);
+                    Long hostId = requestBodyJson.getLong(HOST_ID);
                     User host = userService.getUserFromId(hostId);
                     Optional.ofNullable(requestBodyJson.optString("title")).ifPresent(event::setTitle);
                     event.setDate(getDateFomDateString(requestBodyJson.optString("date")));
@@ -187,7 +186,7 @@ public class EventController {
                     Optional.ofNullable(requestBodyJson.optString("category")).ifPresent(event::setCategory);
                     Optional.of(requestBodyJson.optInt("maxAttendees")).ifPresent(event::setMaxAttendees);
                     Event storedEvent = eventService.storeEvent(host, event);
-                    responseBody = new EventPlannerResponseBody(EventPlannerConstants.SUCCESS, eventMapper.toDto(storedEvent));
+                    responseBody = new EventPlannerResponseBody(SUCCESS, eventMapper.toDto(storedEvent));
                     responseEntity = new ResponseEntity<>(responseBody, HttpStatus.CREATED);
                 }
             }
