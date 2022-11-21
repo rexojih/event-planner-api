@@ -28,6 +28,25 @@ public class UserService {
         return user;
     }
 
+    public List<User> getUserFromNameContaining(String name) {
+        List<User> usersByUserName = userRepository.findByUserNameStartsWith(name);
+        List<User> usersByFistName = userRepository.findByLastNameStartsWith(name);
+        List<User> usersByLastName = userRepository.findByFirstNameStartsWith(name);
+        return merge(usersByUserName, usersByLastName, usersByFistName);
+    }
+
+    @SafeVarargs
+    private List<User> merge(List<User>... userLists) {
+        List<User> users = new ArrayList<>(userLists[0]);
+        for (int i = 1; i < userLists.length; i++) {
+            for (User user : userLists[i]) {
+                if (!users.contains(user))
+                    users.add(user);
+            }
+        }
+        return users;
+    }
+
     public User storeUser(User user) {
         return userRepository.save(user);
     }
@@ -41,13 +60,13 @@ public class UserService {
     }
 
     private void mapUpdate(User user, String newUserName, String newPassword, String originalPassword, String newFirstName, String newLastName, Location newLocation) throws UserServiceException {
-        if (newUserName != null)
+        if (newUserName != null && !newUserName.isBlank())
             user.setUserName(newUserName);
         if (validPasswordChange(user, newPassword, originalPassword))
             user.setPassword(newPassword);
-        if (newFirstName != null)
+        if (newFirstName != null && !newFirstName.isBlank())
             user.setFirstName(newFirstName);
-        if (newLastName != null)
+        if (newLastName != null && !newLastName.isBlank())
             user.setLastName(newLastName);
         if (newLocation != null)
             user.setLocation(newLocation);

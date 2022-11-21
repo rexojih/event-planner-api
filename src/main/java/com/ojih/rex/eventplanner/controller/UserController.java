@@ -114,6 +114,39 @@ public class UserController {
         return responseEntity;
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<EventPlannerResponseBody> searchUserByName(@RequestHeader(required = false) Map<String, String> requestHeaders,
+                                                                     @RequestBody(required = false) String requestBody) {
+        EventPlannerResponseBody responseBody;
+        ResponseEntity<EventPlannerResponseBody> responseEntity;
+        try {
+            if (!(requestBody == null || requestBody.isBlank())) {
+                JSONObject requestBodyJson = new JSONObject(requestBody);
+                String name = requestBodyJson.optString("name");
+                if (name != null) {
+                    List<User> users = userService.getUserFromNameContaining(name);
+                    UserDTO [] userDTOs = new UserDTO[users.size()];
+                    responseBody = new EventPlannerResponseBody(SUCCESS, userMapper.toDtos(users).toArray(userDTOs));
+                    responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
+                } else {
+                    responseBody = new EventPlannerResponseBody("Unable to search users. No 'name' found in request body.");
+                    responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
+                }
+            } else {
+                responseBody = new EventPlannerResponseBody("Unable to search users. Invalid JSON.");
+                responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
+            }
+        } catch (JSONException e) {
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            e.printStackTrace();
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return responseEntity;
+    }
+
     @PostMapping("/add")
     public ResponseEntity<EventPlannerResponseBody> postUser(@RequestHeader(required = false) Map<String, String> requestHeaders,
                                                              @RequestBody String requestBody) {

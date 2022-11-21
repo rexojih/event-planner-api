@@ -12,11 +12,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
     User findDistinctByUserId(Long userId);
     List<User> findByUserIdIn(List<Long> userIds);
     List<User> findByUserName(String userName);
-    List<User> findByUserNameContaining(String userName);
+    List<User> findByUserNameStartsWith(String userName);
     List<User> findByFirstName(String firstName);
-    List<User> findByFirstNameContaining(String firstName);
+    List<User> findByFirstNameStartsWith(String firstName);
     List<User> findByLastName(String lastName);
-    List<User> findByLastNameContaining(String lastName);
+    List<User> findByLastNameStartsWith(String lastName);
     List<User> findByFirstNameOrLastName(String first, String last);
     List<User> findByFirstNameOrLastNameContaining(String first, String last);
     List<User> findDistinctByEmail(String email);

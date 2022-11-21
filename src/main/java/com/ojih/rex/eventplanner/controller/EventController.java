@@ -92,7 +92,7 @@ public class EventController {
                 responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
             } else {
                 JSONObject requestBodyJson = new JSONObject(requestBody);
-                String fetchStrategy = requestBodyJson.optString("strategy");
+                String strategy = requestBodyJson.optString("strategy");
                 JSONArray eventIdJsonArray = requestBodyJson.getJSONArray("eventIds");
                 List<Object> eventIdObjects = eventIdJsonArray.toList();
                 List<Long> eventIds = new ArrayList<>();
@@ -105,9 +105,9 @@ public class EventController {
                     responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
                 } else {
                     List<Event> events;
-                    if (UPCOMING.equals(fetchStrategy))
+                    if (UPCOMING.equals(strategy))
                         events = eventService.getUpcomingEventsFromIds(eventIds);
-                    else if (PAST.equals(fetchStrategy))
+                    else if (PAST.equals(strategy))
                         events = eventService.getPastEventsFromIds(eventIds);
                     else
                         events = eventService.getEventsFromIds(eventIds);
