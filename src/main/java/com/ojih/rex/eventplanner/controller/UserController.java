@@ -1,11 +1,13 @@
 package com.ojih.rex.eventplanner.controller;
 
+import com.ojih.rex.eventplanner.constants.EventPlannerConstants;
 import com.ojih.rex.eventplanner.exception.UserServiceException;
+import com.ojih.rex.eventplanner.model.EventPlannerResponseBody;
 import com.ojih.rex.eventplanner.model.Location;
-import com.ojih.rex.eventplanner.model.event.Event;
-import com.ojih.rex.eventplanner.model.event.EventDTO;
-import com.ojih.rex.eventplanner.model.user.User;
-import com.ojih.rex.eventplanner.model.user.UserDTO;
+import com.ojih.rex.eventplanner.model.Event;
+import com.ojih.rex.eventplanner.model.dto.EventDTO;
+import com.ojih.rex.eventplanner.model.User;
+import com.ojih.rex.eventplanner.model.dto.UserDTO;
 import com.ojih.rex.eventplanner.service.UserService;
 import com.ojih.rex.eventplanner.utilities.Mapper;
 import org.json.JSONException;
@@ -36,66 +38,85 @@ public class UserController {
     }
 
     @GetMapping("/get")
-    public ResponseEntity<Object> getUser(@RequestParam(value = "id", required = false) Long userId,
+    public ResponseEntity<EventPlannerResponseBody> getUser(@RequestParam(value = "id", required = false) Long userId,
                                            @RequestHeader(required = false) Map<String, String> requestHeaders,
                                            @RequestBody(required = false) String requestBody) {
-        ResponseEntity<Object> responseEntity;
+        EventPlannerResponseBody responseBody;
+        ResponseEntity<EventPlannerResponseBody> responseEntity;
         try {
-            if (!requestBody.isBlank()) {
+            if (!(requestBody == null || requestBody.isBlank())) {
                 JSONObject requestBodyJson = new JSONObject(requestBody);
-                userId = requestBodyJson.getLong("userId");
+                userId = requestBodyJson.getLong(EventPlannerConstants.USER_ID);
             }
             User user = userService.getUserFromId(userId);
 
-            if (user != null)
-                responseEntity = new ResponseEntity<>(userMapper.toDto(user), HttpStatus.OK);
-            else
-                responseEntity = new ResponseEntity<>("Unable to fetch user " + userId + " from DB", HttpStatus.NOT_FOUND);
+            if (user != null) {
+                responseBody = new EventPlannerResponseBody(EventPlannerConstants.SUCCESS, userMapper.toDto(user));
+                responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
+            } else {
+                responseBody = new EventPlannerResponseBody("Unable to fetch user " + userId + " from DB");
+                responseEntity = new ResponseEntity<>(responseBody, HttpStatus.NOT_FOUND);
+            }
         } catch (JSONException e) {
             e.printStackTrace();
-            responseEntity = new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             e.printStackTrace();
-            responseEntity = new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return responseEntity;
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<UserDTO>> getUsers() {
-        return new ResponseEntity<>(userMapper.toDtos(userService.getUsers()), HttpStatus.OK);
+    public ResponseEntity<EventPlannerResponseBody> getUsers() {
+        List<User> users = userService.getUsers();
+        UserDTO [] userDTOs = new UserDTO[users.size()];
+        EventPlannerResponseBody responseBody = new EventPlannerResponseBody(EventPlannerConstants.SUCCESS, userMapper.toDtos(users).toArray(userDTOs));
+        return new ResponseEntity<>(responseBody, HttpStatus.OK);
     }
 
     @GetMapping("/events")
-    public ResponseEntity<Object> getUserEvents(@RequestParam(value = "id", required = false) Long userId,
+    public ResponseEntity<EventPlannerResponseBody> getUserEvents(@RequestParam(value = "id", required = false) Long userId,
                                                     @RequestHeader(required = false) Map<String, String> requestHeaders,
                                                     @RequestBody(required = false) String requestBody) {
-        ResponseEntity<Object> responseEntity;
+        EventPlannerResponseBody responseBody;
+        ResponseEntity<EventPlannerResponseBody> responseEntity;
         try {
-            if (!requestBody.isBlank()) {
+            if (!(requestBody == null || requestBody.isBlank())) {
                 JSONObject requestBodyJson = new JSONObject(requestBody);
-                userId = requestBodyJson.getLong("userId");
+                userId = requestBodyJson.getLong(EventPlannerConstants.USER_ID);
             }
             User user = userService.getUserFromId(userId);
-            responseEntity = new ResponseEntity<>(eventMapper.toDtos(user.getEvents()), HttpStatus.OK);
+            List<Event> events = user.getEvents();
+            EventDTO [] eventDTOs = new EventDTO[events.size()];
+            responseBody = new EventPlannerResponseBody(EventPlannerConstants.SUCCESS, eventMapper.toDtos(events).toArray(eventDTOs));
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
         } catch (JSONException e) {
-            responseEntity = new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
         } catch (UserServiceException e) {
-            responseEntity = new ResponseEntity<>(e.getMessage(), HttpStatus.NO_CONTENT);
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.NO_CONTENT);
         } catch (Exception e) {
-            responseEntity = new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return responseEntity;
     }
 
     @PostMapping("/add")
-    public ResponseEntity<Object> postUser(@RequestHeader(required = false) Map<String, String> requestHeaders,
+    public ResponseEntity<EventPlannerResponseBody> postUser(@RequestHeader(required = false) Map<String, String> requestHeaders,
                                             @RequestBody String requestBody) {
-        ResponseEntity<Object> responseEntity;
+        EventPlannerResponseBody responseBody;
+        ResponseEntity<EventPlannerResponseBody> responseEntity;
 
         try {
-            if (requestBody.isBlank())
-                responseEntity = new ResponseEntity<>("Cannot store null user", HttpStatus.BAD_REQUEST);
+            if (requestBody == null || requestBody.isBlank()) {
+                responseBody = new EventPlannerResponseBody("Cannot store null user");
+                responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
+            }
             else {
                 User user = new User();
                 JSONObject requestBodyJson = new JSONObject(requestBody);
@@ -107,30 +128,35 @@ public class UserController {
                 Optional.ofNullable(requestBodyJson.optString("password")).ifPresent(user::setPassword);
                 Optional.ofNullable(requestBodyJson.optJSONObject("location")).ifPresent(location -> user.setLocation(getLocationFromJson(location)));
                 User storedUser = userService.storeUser(user);
-                responseEntity = new ResponseEntity<>(userMapper.toDto(storedUser), HttpStatus.CREATED);
+                responseBody = new EventPlannerResponseBody(EventPlannerConstants.SUCCESS, userMapper.toDto(storedUser));
+                responseEntity = new ResponseEntity<>(responseBody, HttpStatus.CREATED);
             }
         } catch (Exception e) {
             e.printStackTrace();
-            responseEntity = new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         return responseEntity;
     }
 
     @PutMapping("/update")
-    public ResponseEntity<Object> updateUser(@RequestHeader(required = false) Map<String, String> requestHeaders,
-                                              @RequestBody String requestBody) {
-        ResponseEntity<Object> responseEntity;
+    public ResponseEntity<EventPlannerResponseBody> updateUser(@RequestHeader(required = false) Map<String, String> requestHeaders,
+                                                               @RequestBody String requestBody) {
+        EventPlannerResponseBody responseBody;
+        ResponseEntity<EventPlannerResponseBody> responseEntity;
         try {
-            if (requestBody.isBlank()) {
-                responseEntity = new ResponseEntity<>("Cannot update null user", HttpStatus.BAD_REQUEST);
+            if (requestBody == null || requestBody.isBlank()) {
+                responseBody = new EventPlannerResponseBody("Cannot update null user");
+                responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
             } else {
                 User updateUser = new User();
                 JSONObject requestBodyJson = new JSONObject(requestBody);
-                if (!validRequestBodyJson(requestBodyJson, "userId")) {
-                    responseEntity = new ResponseEntity<>("Unable to update user with no userId", HttpStatus.BAD_REQUEST);
+                if (!validRequestBodyJson(requestBodyJson, EventPlannerConstants.USER_ID)) {
+                    responseBody = new EventPlannerResponseBody("Unable to update user with no userId");
+                    responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
                 } else {
-                    Long userId = requestBodyJson.getLong("userId");
+                    Long userId = requestBodyJson.getLong(EventPlannerConstants.USER_ID);
                     Optional.ofNullable(requestBodyJson.optString("userName")).ifPresent(updateUser::setUserName);
                     Optional.ofNullable(requestBodyJson.optString("firstName")).ifPresent(updateUser::setFirstName);
                     Optional.ofNullable(requestBodyJson.optString("lastName")).ifPresent(updateUser::setLastName);
@@ -139,14 +165,17 @@ public class UserController {
                     Optional.ofNullable(requestBodyJson.optJSONObject("location")).ifPresent(location -> updateUser.setLocation(getLocationFromJson(location)));
                     String originalPassword = requestBodyJson.optString("originalPassword");
                     User updatedUser = userService.updateUser(userId, updateUser, originalPassword);
-                    responseEntity = new ResponseEntity<>(userMapper.toDto(updatedUser), HttpStatus.OK);
+                    responseBody = new EventPlannerResponseBody(EventPlannerConstants.SUCCESS, userMapper.toDto(updatedUser));
+                    responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
                 }
             }
         } catch (JSONException e) {
-            responseEntity = new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             e.printStackTrace();
-            responseEntity = new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return responseEntity;
     }

@@ -1,6 +1,6 @@
 package com.ojih.rex.eventplanner.repository;
 
-import com.ojih.rex.eventplanner.model.event.Event;
+import com.ojih.rex.eventplanner.model.Event;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,6 +11,7 @@ import java.util.List;
 public interface EventRepository extends JpaRepository<Event, Long> {
 
     Event findDistinctByEventId(Long eventId);
+    List<Event> findByEventIdIn(List<Long> eventIds);
     List<Event> findByTitle(String title);
     List<Event> findByTitleOrderByDateDesc(String title);
     List<Event> findByTitleContaining(String title);

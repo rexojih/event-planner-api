@@ -1,4 +1,4 @@
-package com.ojih.rex.eventplanner.model.constants;
+package com.ojih.rex.eventplanner.constants;
 
 public class CategoryConstants {
 
@@ -11,6 +11,5 @@ public class CategoryConstants {
     public static final String OUTDOORS = "Outdoors";
     public static final String LEARNING = "Learning";
     public static final String MISC = "Misc";
-    //foo bar
 }
 

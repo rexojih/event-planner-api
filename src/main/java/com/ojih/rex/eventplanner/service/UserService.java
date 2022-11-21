@@ -2,8 +2,7 @@ package com.ojih.rex.eventplanner.service;
 
 import com.ojih.rex.eventplanner.exception.UserServiceException;
 import com.ojih.rex.eventplanner.model.Location;
-import com.ojih.rex.eventplanner.model.event.Event;
-import com.ojih.rex.eventplanner.model.user.User;
+import com.ojih.rex.eventplanner.model.User;
 import com.ojih.rex.eventplanner.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

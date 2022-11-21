@@ -2,8 +2,8 @@ package com.ojih.rex.eventplanner.service;
 
 import com.ojih.rex.eventplanner.exception.EventServiceException;
 import com.ojih.rex.eventplanner.model.Location;
-import com.ojih.rex.eventplanner.model.event.Event;
-import com.ojih.rex.eventplanner.model.user.User;
+import com.ojih.rex.eventplanner.model.Event;
+import com.ojih.rex.eventplanner.model.User;
 import com.ojih.rex.eventplanner.repository.EventRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -76,6 +76,13 @@ public class EventService {
         if (event == null)
             throw new EventServiceException("Unable to get event. EventId " + eventId + NOT_FOUND);
         return event;
+    }
+
+    public List<Event> getEventsFromIds(List<Long> eventIds) throws EventServiceException {
+        List<Event> events = eventRepository.findByEventIdIn(eventIds);
+        if (events.isEmpty())
+            throw new EventServiceException("Unable to get events. No events found with eventIds: " + eventIds);
+        return events;
     }
 
     public List<Event> getEventsFromHostId(Long hostId) {

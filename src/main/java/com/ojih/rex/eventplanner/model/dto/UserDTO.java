@@ -1,4 +1,4 @@
-package com.ojih.rex.eventplanner.model.user;
+package com.ojih.rex.eventplanner.model.dto;
 
 import com.ojih.rex.eventplanner.model.Location;
 import lombok.Builder;
@@ -6,7 +6,7 @@ import lombok.Builder;
 import java.util.List;
 
 @Builder
-public class UserDTO {
+public class UserDTO extends DTO {
 
     private Long userId;
     private String userName;

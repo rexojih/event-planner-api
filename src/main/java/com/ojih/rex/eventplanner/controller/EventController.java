@@ -1,14 +1,17 @@
 package com.ojih.rex.eventplanner.controller;
 
+import com.ojih.rex.eventplanner.constants.EventPlannerConstants;
 import com.ojih.rex.eventplanner.exception.EventServiceException;
+import com.ojih.rex.eventplanner.model.Event;
+import com.ojih.rex.eventplanner.model.EventPlannerResponseBody;
 import com.ojih.rex.eventplanner.model.Location;
-import com.ojih.rex.eventplanner.model.event.Event;
-import com.ojih.rex.eventplanner.model.event.EventDTO;
-import com.ojih.rex.eventplanner.model.user.User;
-import com.ojih.rex.eventplanner.model.user.UserDTO;
+import com.ojih.rex.eventplanner.model.User;
+import com.ojih.rex.eventplanner.model.dto.EventDTO;
+import com.ojih.rex.eventplanner.model.dto.UserDTO;
 import com.ojih.rex.eventplanner.service.EventService;
 import com.ojih.rex.eventplanner.service.UserService;
 import com.ojih.rex.eventplanner.utilities.Mapper;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +24,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import static com.ojih.rex.eventplanner.constants.EventPlannerConstants.EVENT_ID;
+import static com.ojih.rex.eventplanner.constants.EventPlannerConstants.USER_ID;
+
 @RestController
 @RequestMapping("/api/v1/event")
 public class EventController {
@@ -30,9 +36,7 @@ public class EventController {
     private final Mapper<EventDTO, Event> eventMapper;
     private final Mapper<UserDTO, User> userMapper;
 
-    private static final String EVENT_ID = "eventId";
-    private static final String HOST_ID = "hostId";
-    public static final String USER_ID = "userId";
+
 
     @Autowired
     public EventController(EventService eventService, UserService userService, @Qualifier("eventMapper") Mapper<EventDTO, Event> eventMapper, @Qualifier("userMapper") Mapper<UserDTO, User> userMapper) {
@@ -43,74 +47,138 @@ public class EventController {
     }
 
     @GetMapping("/get")
-    public ResponseEntity<Object> getEvent(@RequestParam(value = "id", required = false) Long eventId,
-                             @RequestHeader(required = false) Map<String, String> requestHeaders,
-                             @RequestBody(required = false) String requestBody) {
-        ResponseEntity<Object> responseEntity;
+    public ResponseEntity<EventPlannerResponseBody> getEvent(@RequestParam(value = "id", required = false) Long eventId,
+                                                             @RequestHeader(required = false) Map<String, String> requestHeaders,
+                                                             @RequestBody(required = false) String requestBody) {
+        EventPlannerResponseBody responseBody;
+        ResponseEntity<EventPlannerResponseBody> responseEntity;
         try{
-            if (!requestBody.isBlank()) {
+            if (!(requestBody == null || requestBody.isBlank())) {
                 JSONObject requestBodyJson = new JSONObject(requestBody);
                 eventId = requestBodyJson.getLong(EVENT_ID);
             }
             Event event = eventService.getEventFromId(eventId);
 
-            if (event != null)
-                responseEntity = new ResponseEntity<>(eventMapper.toDto(event), HttpStatus.OK);
-            else
-                responseEntity = new ResponseEntity<>("Unable to fetch event " + eventId + " from DB", HttpStatus.NOT_FOUND);
+            if (event != null) {
+                responseBody = new EventPlannerResponseBody(EventPlannerConstants.SUCCESS, eventMapper.toDto(event));
+                responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
+            }
+            else {
+                responseBody = new EventPlannerResponseBody("Unable to fetch event " + eventId + " from DB");
+                responseEntity = new ResponseEntity<>(responseBody, HttpStatus.NOT_FOUND);
+            }
         } catch (JSONException e) {
             e.printStackTrace();
-            responseEntity = new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
         } catch (EventServiceException e) {
-            responseEntity = new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.NOT_FOUND);
         } catch (Exception e) {
             e.printStackTrace();
-            responseEntity = new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return responseEntity;
+    }
+
+    @GetMapping("/getFromIds")
+    public ResponseEntity<EventPlannerResponseBody> getEventsFromIds(@RequestHeader(required = false) Map<String, String> requestHeaders,
+                                           @RequestBody(required = false) String requestBody) {
+        EventPlannerResponseBody responseBody;
+        ResponseEntity<EventPlannerResponseBody> responseEntity;
+        try{
+            if (requestBody == null || requestBody.isBlank()) {
+                responseBody = new EventPlannerResponseBody("Unable to get events using null eventIds");
+                responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
+            } else {
+                JSONArray requestBodyJson = new JSONArray(requestBody);
+                List<Object> eventIdObjects = requestBodyJson.toList();
+                List<Long> eventIds = new ArrayList<>();
+                for (Object eventIdObject : eventIdObjects) {
+                    Integer eventId = (Integer) eventIdObject;
+                    eventIds.add(Long.valueOf(eventId));
+                }
+                if (eventIds.isEmpty()) {
+                    responseBody = new EventPlannerResponseBody("Unable to get events from empty eventId list");
+                    responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
+                } else {
+                    List<Event> events = eventService.getEventsFromIds(eventIds);
+                    EventDTO [] eventDTOs = new EventDTO[events.size()];
+                    responseBody = new EventPlannerResponseBody(EventPlannerConstants.SUCCESS, eventMapper.toDtos(events).toArray(eventDTOs));
+                    responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
+        } catch (EventServiceException e) {
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            e.printStackTrace();
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return responseEntity;
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<EventDTO>> getEvents() {
-        return new ResponseEntity<>(eventMapper.toDtos(eventService.getEvents()), HttpStatus.OK);
+    public ResponseEntity<EventPlannerResponseBody> getAllEvents() {
+        List<Event> events = eventService.getEvents();
+        EventDTO [] eventDTOs = new EventDTO[events.size()];
+        EventPlannerResponseBody responseBody = new EventPlannerResponseBody(EventPlannerConstants.SUCCESS, eventMapper.toDtos(events).toArray(eventDTOs));
+
+        return new ResponseEntity<>(responseBody, HttpStatus.OK);
     }
 
     @GetMapping("/attendees")
-    public ResponseEntity<Object> getEventAttendees(@RequestParam(value = "id", required = false) Long eventId,
+    public ResponseEntity<EventPlannerResponseBody> getEventAttendees(@RequestParam(value = "id", required = false) Long eventId,
                                                         @RequestHeader(required = false) Map<String, String> requestHeaders,
                                                         @RequestBody(required = false) String requestBody) {
-        ResponseEntity<Object> responseEntity;
+        EventPlannerResponseBody responseBody;
+        ResponseEntity<EventPlannerResponseBody> responseEntity;
         try {
-            if (!requestBody.isEmpty()) {
+            if (!(requestBody == null || requestBody.isBlank())) {
                 JSONObject requestBodyJson = new JSONObject(requestBody);
                 eventId = requestBodyJson.getLong(EVENT_ID);
             }
             Event event = eventService.getEventFromId(eventId);
-            responseEntity = new ResponseEntity<>(userMapper.toDtos(event.getAttendees()), HttpStatus.OK);
+            List<User> users = event.getAttendees();
+            UserDTO [] userDTOs = new UserDTO[users.size()];
+            responseBody = new EventPlannerResponseBody(EventPlannerConstants.SUCCESS, userMapper.toDtos(users).toArray(userDTOs));
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
         } catch (JSONException e) {
-            responseEntity = new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
         } catch (EventServiceException e) {
-            responseEntity = new ResponseEntity<>(e.getMessage(), HttpStatus.NO_CONTENT);
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.NO_CONTENT);
         } catch (Exception e) {
-            responseEntity = new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return responseEntity;
     }
 
     @PostMapping("/add")
-    public ResponseEntity<Object> postEvent(@RequestHeader(required = false) Map<String, String> requestHeaders,
+    public ResponseEntity<EventPlannerResponseBody> postEvent(@RequestHeader(required = false) Map<String, String> requestHeaders,
                                             @RequestBody String requestBody) {
-        ResponseEntity<Object> responseEntity;
+        EventPlannerResponseBody responseBody;
+        ResponseEntity<EventPlannerResponseBody> responseEntity;
         try {
-            if (requestBody.isBlank()) {
-                responseEntity = new ResponseEntity<>("Cannot store null event", HttpStatus.BAD_REQUEST);
+            if (requestBody == null || requestBody.isBlank()) {
+                responseBody = new EventPlannerResponseBody("Cannot store null event");
+                responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
             } else {
                 Event event = new Event();
                 JSONObject requestBodyJson = new JSONObject(requestBody);
-                if (!validRequestBodyJson(requestBodyJson, HOST_ID)) {
-                    responseEntity = new ResponseEntity<>("Unable to add event with no host", HttpStatus.BAD_REQUEST);
+                if (!validRequestBodyJson(requestBodyJson, EventPlannerConstants.HOST_ID)) {
+                    responseBody = new EventPlannerResponseBody("Unable to add event with no host");
+                    responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
                 } else {
-                    Long hostId = requestBodyJson.getLong(HOST_ID);
+                    Long hostId = requestBodyJson.getLong(EventPlannerConstants.HOST_ID);
                     User host = userService.getUserFromId(hostId);
                     Optional.ofNullable(requestBodyJson.optString("title")).ifPresent(event::setTitle);
                     event.setDate(getDateFomDateString(requestBodyJson.optString("date")));
@@ -119,30 +187,36 @@ public class EventController {
                     Optional.ofNullable(requestBodyJson.optString("category")).ifPresent(event::setCategory);
                     Optional.of(requestBodyJson.optInt("maxAttendees")).ifPresent(event::setMaxAttendees);
                     Event storedEvent = eventService.storeEvent(host, event);
-                    responseEntity = new ResponseEntity<>(eventMapper.toDto(storedEvent), HttpStatus.CREATED);
+                    responseBody = new EventPlannerResponseBody(EventPlannerConstants.SUCCESS, eventMapper.toDto(storedEvent));
+                    responseEntity = new ResponseEntity<>(responseBody, HttpStatus.CREATED);
                 }
             }
         } catch (JSONException e) {
-            responseEntity = new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             e.printStackTrace();
-            responseEntity = new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return responseEntity;
     }
 
     @PutMapping("/update")
-    public ResponseEntity<Object> updateEvent(@RequestHeader(required = false) Map<String, String> requestHeaders,
+    public ResponseEntity<EventPlannerResponseBody> updateEvent(@RequestHeader(required = false) Map<String, String> requestHeaders,
                                               @RequestBody String requestBody) {
-        ResponseEntity<Object> responseEntity;
+        EventPlannerResponseBody responseBody;
+        ResponseEntity<EventPlannerResponseBody> responseEntity;
         try {
-            if (requestBody.isBlank()) {
-                responseEntity = new ResponseEntity<>("Cannot update null event", HttpStatus.BAD_REQUEST);
+            if (requestBody == null || requestBody.isBlank()) {
+                responseBody = new EventPlannerResponseBody("Cannot update null event");
+                responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
             } else {
                 Event updateEvent = new Event();
                 JSONObject requestBodyJson = new JSONObject(requestBody);
                 if (!validRequestBodyJson(requestBodyJson, EVENT_ID)) {
-                    responseEntity = new ResponseEntity<>("Unable to update event with no eventId", HttpStatus.BAD_REQUEST);
+                    responseBody = new EventPlannerResponseBody("Unable to update event with no eventId");
+                    responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
                 } else {
                     Long eventId = requestBodyJson.getLong(EVENT_ID);
                     Optional.ofNullable(requestBodyJson.optString("title")).ifPresent(updateEvent::setTitle);
@@ -152,72 +226,88 @@ public class EventController {
                     Optional.ofNullable(requestBodyJson.optString("category")).ifPresent(updateEvent::setCategory);
                     Optional.of(requestBodyJson.optInt("maxAttendees")).ifPresent(updateEvent::setMaxAttendees);
                     Event updatedEvent = eventService.updateEvent(eventId, updateEvent);
-                    responseEntity = new ResponseEntity<>(eventMapper.toDto(updatedEvent), HttpStatus.OK);
+                    responseBody = new EventPlannerResponseBody(eventMapper.toDto(updatedEvent));
+                    responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
                 }
             }
         } catch (JSONException e) {
-            responseEntity = new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             e.printStackTrace();
-            responseEntity = new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return responseEntity;
     }
 
     @PutMapping("/addAttendee")
-    public ResponseEntity<Object> addEventAttendee(@RequestHeader(required = false) Map<String, String> requestHeaders,
+    public ResponseEntity<EventPlannerResponseBody> addEventAttendee(@RequestHeader(required = false) Map<String, String> requestHeaders,
                                               @RequestBody String requestBody) {
-        ResponseEntity<Object> responseEntity;
+        EventPlannerResponseBody responseBody;
+        ResponseEntity<EventPlannerResponseBody> responseEntity;
         try {
-            if (requestBody.isBlank()) {
-                responseEntity = new ResponseEntity<>("Cannot add attendee to null event", HttpStatus.BAD_REQUEST);
+            if (requestBody == null || requestBody.isBlank()) {
+                responseBody = new EventPlannerResponseBody("Cannot add attendee to null event");
+                responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
             } else {
                 Event updateEvent = new Event();
                 JSONObject requestBodyJson = new JSONObject(requestBody);
 
                 if (!validRequestBodyJson(requestBodyJson, EVENT_ID, USER_ID)) {
-                    responseEntity = new ResponseEntity<>("Unable to add attendee to event with no eventId or userId", HttpStatus.BAD_REQUEST);
+                    responseBody = new EventPlannerResponseBody("Unable to add attendee to event with no eventId or userId");
+                    responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
                 } else {
                     Long eventId = requestBodyJson.getLong(EVENT_ID);
                     Long userId = requestBodyJson.getLong(USER_ID);
                     User attendee = userService.getUserFromId(userId);
                     if (attendee == null) {
-                        responseEntity = new ResponseEntity<>("Unable to fetch attendee from DB", HttpStatus.NO_CONTENT);
+                        responseBody = new EventPlannerResponseBody("Unable to fetch attendee from DB");
+                        responseEntity = new ResponseEntity<>(responseBody, HttpStatus.NO_CONTENT);
                     } else {
                         Event updatedEvent = eventService.addEventAttendee(eventId, attendee);
-                        responseEntity = new ResponseEntity<>(eventMapper.toDto(updatedEvent), HttpStatus.OK);
+                        responseBody = new EventPlannerResponseBody(eventMapper.toDto(updatedEvent));
+                        responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
                     }
                 }
             }
         } catch (JSONException e) {
-            responseEntity = new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             e.printStackTrace();
-            responseEntity = new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return responseEntity;
     }
 
     @DeleteMapping("/delete")
-    public ResponseEntity<String> deleteEvent(@RequestParam(value = "id", required = false) Long eventId,
+    public ResponseEntity<EventPlannerResponseBody> deleteEvent(@RequestParam(value = "id", required = false) Long eventId,
                                         @RequestHeader(required = false) Map<String, String> requestHeaders,
                                         @RequestBody(required = false) String requestBody) {
-        ResponseEntity<String> responseEntity;
+        EventPlannerResponseBody responseBody;
+        ResponseEntity<EventPlannerResponseBody> responseEntity;
         try {
-            if (!requestBody.isEmpty()) {
+            if (!(requestBody == null || requestBody.isBlank())) {
                 JSONObject requestBodyJson = new JSONObject(requestBody);
                 eventId = requestBodyJson.getLong(EVENT_ID);
             }
             if (eventService.eventExists(eventId)) {
                 eventService.removeEvent(eventId);
-                responseEntity = new ResponseEntity<>("Event " + eventId + " removed.", HttpStatus.OK);
-            } else
-                responseEntity = new ResponseEntity<>("Event " + eventId + " does not exist", HttpStatus.NOT_FOUND);
+                responseBody = new EventPlannerResponseBody("Event " + eventId + " removed.");
+                responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
+            } else {
+                responseBody = new EventPlannerResponseBody("Event " + eventId + " does not exist");
+                responseEntity = new ResponseEntity<>(responseBody, HttpStatus.NOT_FOUND);
+            }
         } catch (JSONException e) {
-            responseEntity = new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
         }catch (Exception e) {
             e.printStackTrace();
-            responseEntity = new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);;
         }
         return responseEntity;
     }

@@ -1,6 +1,6 @@
 package com.ojih.rex.eventplanner.repository;
 
-import com.ojih.rex.eventplanner.model.user.User;
+import com.ojih.rex.eventplanner.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -9,23 +9,24 @@ import java.util.List;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    public User findDistinctByUserId(Long userId);
-    public List<User> findByUserName(String userName);
-    public List<User> findByUserNameContaining(String userName);
-    public List<User> findByFirstName(String firstName);
-    public List<User> findByFirstNameContaining(String firstName);
-    public List<User> findByLastName(String lastName);
-    public List<User> findByLastNameContaining(String lastName);
-    public List<User> findByFirstNameOrLastName(String first, String last);
-    public List<User> findByFirstNameOrLastNameContaining(String first, String last);
-    public List<User> findDistinctByEmail(String email);
-    public List<User> findByLocationCity(String city);
-    public List<User> findByLocationState(String state);
-    public List<User> findByLocationPostalCode(String postalCOde);
-    public List<User> findByLocationCityOrLocationState(String city, String state);
-    public List<User> findByLocationCityAndLocationState(String city, String state);
-    public List<User> findByLocationCityOrLocationPostalCode(String city, String postalCode);
-    public List<User> findByLocationCityAndLocationPostalCode(String city, String postalCode);
-    public List<User> findByLocationStateOrLocationPostalCode(String state, String postalCode);
-    public List<User> findByLocationStateAndLocationPostalCode(String state, String postalCode);
+    User findDistinctByUserId(Long userId);
+    List<User> findByUserIdIn(List<Long> userIds);
+    List<User> findByUserName(String userName);
+    List<User> findByUserNameContaining(String userName);
+    List<User> findByFirstName(String firstName);
+    List<User> findByFirstNameContaining(String firstName);
+    List<User> findByLastName(String lastName);
+    List<User> findByLastNameContaining(String lastName);
+    List<User> findByFirstNameOrLastName(String first, String last);
+    List<User> findByFirstNameOrLastNameContaining(String first, String last);
+    List<User> findDistinctByEmail(String email);
+    List<User> findByLocationCity(String city);
+    List<User> findByLocationState(String state);
+    List<User> findByLocationPostalCode(String postalCOde);
+    List<User> findByLocationCityOrLocationState(String city, String state);
+    List<User> findByLocationCityAndLocationState(String city, String state);
+    List<User> findByLocationCityOrLocationPostalCode(String city, String postalCode);
+    List<User> findByLocationCityAndLocationPostalCode(String city, String postalCode);
+    List<User> findByLocationStateOrLocationPostalCode(String state, String postalCode);
+    List<User> findByLocationStateAndLocationPostalCode(String state, String postalCode);
 }

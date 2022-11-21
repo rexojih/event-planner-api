@@ -4,12 +4,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.Embeddable;
-import java.io.Serializable;
 
 @Embeddable
 @Data
 @NoArgsConstructor
-public class Location implements Serializable {
+public class Location {
 
     private String streetAddress;
     private String city;

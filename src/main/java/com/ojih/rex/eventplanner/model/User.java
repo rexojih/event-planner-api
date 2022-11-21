@@ -1,7 +1,7 @@
-package com.ojih.rex.eventplanner.model.user;
+package com.ojih.rex.eventplanner.model;
 
 import com.ojih.rex.eventplanner.model.Location;
-import com.ojih.rex.eventplanner.model.event.Event;
+import com.ojih.rex.eventplanner.model.Event;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

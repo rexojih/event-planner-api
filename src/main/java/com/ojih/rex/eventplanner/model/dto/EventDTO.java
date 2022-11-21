@@ -1,14 +1,13 @@
-package com.ojih.rex.eventplanner.model.event;
+package com.ojih.rex.eventplanner.model.dto;
 
 import com.ojih.rex.eventplanner.model.Location;
 import lombok.Builder;
 
-import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
 @Builder
-public class EventDTO implements Serializable {
+public class EventDTO extends DTO {
 
     private Long eventId;
     private String title;

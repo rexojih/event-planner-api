@@ -1,8 +1,8 @@
 package com.ojih.rex.eventplanner.utilities;
 
-import com.ojih.rex.eventplanner.model.event.Event;
-import com.ojih.rex.eventplanner.model.event.EventDTO;
-import com.ojih.rex.eventplanner.model.user.User;
+import com.ojih.rex.eventplanner.model.Event;
+import com.ojih.rex.eventplanner.model.dto.EventDTO;
+import com.ojih.rex.eventplanner.model.User;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
