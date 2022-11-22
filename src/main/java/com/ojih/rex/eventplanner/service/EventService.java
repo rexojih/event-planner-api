@@ -1,8 +1,8 @@
 package com.ojih.rex.eventplanner.service;
 
 import com.ojih.rex.eventplanner.exception.EventServiceException;
-import com.ojih.rex.eventplanner.model.Location;
 import com.ojih.rex.eventplanner.model.Event;
+import com.ojih.rex.eventplanner.model.Location;
 import com.ojih.rex.eventplanner.model.User;
 import com.ojih.rex.eventplanner.repository.EventRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,73 +79,76 @@ public class EventService {
         return event;
     }
 
-    public List<Event> getEventsFromIds(List<Long> eventIds) throws EventServiceException {
-        List<Event> events = eventRepository.findByEventIdIn(eventIds);
-        if (events.isEmpty())
-            throw new EventServiceException("Unable to get events. No events found with eventIds: " + eventIds);
-        return events;
+    public List<Event> getEventsFromIds(List<Long> eventIds) {
+        return eventRepository.findByEventIdIn(eventIds);
     }
 
-    public List<Event> getUpcomingEventsFromIds(List<Long> eventIds) throws EventServiceException {
-        List<Event> events = eventRepository.findByEventIdInAndDateAfter(eventIds, new Date());
-        if (events.isEmpty())
-            throw new EventServiceException("Unable to get events. No events found with eventIds: " + eventIds);
-        return events;
+    public List<Event> getUpcomingEventsFromIds(List<Long> eventIds) {
+        return eventRepository.findByEventIdInAndDateAfter(eventIds, new Date());
     }
 
-    public List<Event> getPastEventsFromIds(List<Long> eventIds) throws EventServiceException {
-        List<Event> events = eventRepository.findByEventIdInAndDateBefore(eventIds, new Date());
-        if (events.isEmpty())
-            throw new EventServiceException("Unable to get events. No events found with eventIds: " + eventIds);
-        return events;
+    public List<Event> getPastEventsFromIds(List<Long> eventIds) {
+        return eventRepository.findByEventIdInAndDateBefore(eventIds, new Date());
     }
 
     public List<Event> getEventsFromHostId(Long hostId) {
         return eventRepository.findByHostId(hostId);
     }
 
-    public List<Event> getEventsFromHostByDate(Long hostId) {
-        return eventRepository.findByHostIdOrderByDateDesc(hostId);
+    public List<Event> getUpcomingEventsFromHostId(Long hostId) {
+        return eventRepository.findByHostIdAndDateAfterOrderByDateAsc(hostId, new Date());
+    }
+
+    public List<Event> getPastEventsFromHostId(Long hostId) {
+        return eventRepository.findByHostIdAndDateBeforeOrderByDateDesc(hostId, new Date());
     }
 
     public List<Event> getEventsFromTitle(String title) {
         return eventRepository.findByTitle(title);
     }
 
-    public List<Event> getEventsFromTitleByDate(String title) {
-        return eventRepository.findByTitleOrderByDateDesc(title);
+    public List<Event> getUpcomingEventsFromTitle(String title) {
+        return eventRepository.findByTitleAndDateAfterOrderByDateAsc(title, new Date());
     }
 
-    public List<Event> getEventsFromTitleContaining(String title) {
-        return eventRepository.findByTitleContaining(title);
+    public List<Event> getPastEventsFromTitle(String title) {
+        return eventRepository.findByTitleAndDateBeforeOrderByDateDesc(title, new Date());
     }
 
-    public List<Event> getEventsFromTitleContainingByDate(String title) {
-        return eventRepository.findByTitleContainingOrderByDateDesc(title);
+    public List<Event> getEventsFromTitleStartingWith(String title) {
+        return eventRepository.findByTitleStartsWith(title);
     }
 
-    public List<Event> getEventsFromDate(Date date) {
-        return eventRepository.findByDate(date);
+    public List<Event> getUpcomingEventsFromTitleStartingWith(String title) {
+        return eventRepository.findByTitleStartsWithAndDateAfterOrderByDateAsc(title, new Date());
+    }
+
+    public List<Event> getPastEventsFromTitleStartingWith(String title) {
+        return eventRepository.findByTitleStartsWithAndDateBeforeOrderByDateDesc(title, new Date());
     }
 
     public List<Event> getEventsFromAfterDate(Date date) {
-        return eventRepository.findByDateAfter(date);
+        return eventRepository.findByDateAfterOrderByDateAsc(date);
     }
 
     public List<Event> getEventsFromBeforeDate(Date date) {
-        return eventRepository.findByDateBefore(date);
+        return eventRepository.findByDateBeforeOrderByDateDesc(date);
     }
 
     public List<Event> getEventsFromBetweenDates(Date after, Date before) {
-        return eventRepository.findByDateBetween(after, before);
+        return eventRepository.findByDateBetweenOrderByDateAsc(after, before);
     }
 
     public List<Event> getEventsFromCategory(String category) {
         return eventRepository.findByCategory(category);
     }
 
-    public List<Event> getEventsFromCategoryByDate(String category) {
-        return eventRepository.findByCategoryOrderByDateDesc(category);
+    public List<Event> getUpcomingEventsFromCategoryByDate(String category) {
+        return eventRepository.findByCategoryAndDateAfterOrderByDateAsc(category, new Date());
+    }
+
+    public List<Event> getPastEventsFromCategoryByDate(String category) {
+        return eventRepository.findByCategoryAndDateBeforeOrderByDateDesc(category, new Date());
     }
 
     public List<Event> getEventsFromCity(String city) {

@@ -28,7 +28,7 @@ public class UserService {
         return user;
     }
 
-    public List<User> getUserFromNameContaining(String name) {
+    public List<User> getUserFromNameStartingWith(String name) {
         List<User> usersByUserName = userRepository.findByUserNameStartsWith(name);
         List<User> usersByFistName = userRepository.findByLastNameStartsWith(name);
         List<User> usersByLastName = userRepository.findByFirstNameStartsWith(name);
@@ -48,11 +48,11 @@ public class UserService {
     }
 
     public User storeUser(User user) throws UserServiceException {
-        if (!uniqueUserName(user.getUserName()) && !uniqueEmail(user.getEmail()))
+        if (nonUniqueUserName(user.getUserName()) && nonUniqueEmail(user.getEmail()))
             throw new UserServiceException("Username and email are already being used.");
-        else if (!uniqueUserName(user.getUserName()))
+        else if (nonUniqueUserName(user.getUserName()))
             throw new UserServiceException("Username is already being used");
-        else if (!uniqueEmail(user.getEmail()))
+        else if (nonUniqueEmail(user.getEmail()))
             throw new UserServiceException("Email is already being used");
         return userRepository.save(user);
     }
@@ -88,12 +88,12 @@ public class UserService {
         return userRepository.existsById(userId);
     }
 
-    private boolean uniqueUserName(String userName) {
-        return !userRepository.existsByUserName(userName);
+    private boolean nonUniqueUserName(String userName) {
+        return userRepository.existsByUserName(userName);
     }
 
-    private boolean uniqueEmail(String email) {
-        return !userRepository.existsByEmail(email);
+    private boolean nonUniqueEmail(String email) {
+        return userRepository.existsByEmail(email);
     }
 
     public List<User> getUsers() {

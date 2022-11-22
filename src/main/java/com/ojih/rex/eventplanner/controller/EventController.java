@@ -120,9 +120,6 @@ public class EventController {
             e.printStackTrace();
             responseBody = new EventPlannerResponseBody(e.getMessage());
             responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
-        } catch (EventServiceException e) {
-            responseBody = new EventPlannerResponseBody(e.getMessage());
-            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.NOT_FOUND);
         } catch (Exception e) {
             e.printStackTrace();
             responseBody = new EventPlannerResponseBody(e.getMessage());
@@ -162,6 +159,46 @@ public class EventController {
             responseBody = new EventPlannerResponseBody(e.getMessage());
             responseEntity = new ResponseEntity<>(responseBody, HttpStatus.NO_CONTENT);
         } catch (Exception e) {
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return responseEntity;
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<EventPlannerResponseBody> searchEventByTitle(@RequestHeader(required = false) Map<String, String> requestHeaders,
+                                                                       @RequestBody(required = false) String requestBody) {
+        EventPlannerResponseBody responseBody;
+        ResponseEntity<EventPlannerResponseBody> responseEntity;
+        try {
+            if (!(requestBody == null || requestBody.isBlank())) {
+                JSONObject requestBodyJson = new JSONObject(requestBody);
+                String title = requestBodyJson.optString(TITLE);
+                String strategy = requestBodyJson.optString("strategy");
+                if (title != null) {
+                    List<Event> events;
+                    if (UPCOMING.equals(strategy))
+                        events = eventService.getUpcomingEventsFromTitleStartingWith(title);
+                    else if (PAST.equals(strategy))
+                        events = eventService.getPastEventsFromTitleStartingWith(title);
+                    else
+                        events = eventService.getEventsFromTitleStartingWith(title);
+                    EventDTO [] eventDTOs = new EventDTO[events.size()];
+                    responseBody = new EventPlannerResponseBody(SUCCESS, eventMapper.toDtos(events).toArray(eventDTOs));
+                    responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
+                } else {
+                    responseBody = new EventPlannerResponseBody("Unable to search users. No 'name' found in request body.");
+                    responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
+                }
+            } else {
+                responseBody = new EventPlannerResponseBody("Unable to search users. Invalid JSON.");
+                responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
+            }
+        } catch (JSONException e) {
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            e.printStackTrace();
             responseBody = new EventPlannerResponseBody(e.getMessage());
             responseEntity = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
         }

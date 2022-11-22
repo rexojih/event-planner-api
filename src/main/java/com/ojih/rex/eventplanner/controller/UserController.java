@@ -124,7 +124,7 @@ public class UserController {
                 JSONObject requestBodyJson = new JSONObject(requestBody);
                 String name = requestBodyJson.optString("name");
                 if (name != null) {
-                    List<User> users = userService.getUserFromNameContaining(name);
+                    List<User> users = userService.getUserFromNameStartingWith(name);
                     UserDTO [] userDTOs = new UserDTO[users.size()];
                     responseBody = new EventPlannerResponseBody(SUCCESS, userMapper.toDtos(users).toArray(userDTOs));
                     responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
