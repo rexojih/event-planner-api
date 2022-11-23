@@ -155,8 +155,12 @@ public class EventService {
         return eventRepository.findByLocationCity(city);
     }
 
-    public List<Event> getEventsFromCityByDate(String city) {
-        return eventRepository.findByLocationCityOrderByDateDesc(city);
+    public List<Event> getEventsFromCityAfterDate(String city) {
+        return eventRepository.findByLocationCityAndDateAfterOrderByDateAsc(city, new Date());
+    }
+
+    public List<Event> getEventsFromCityBeforeDate(String city) {
+        return eventRepository.findByLocationCityAndDateBeforeOrderByDateDesc(city, new Date());
     }
 
     public List<Event> getEventsFromState(String state) {

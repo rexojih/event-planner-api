@@ -61,13 +61,11 @@ public class EventController {
             if (event != null) {
                 responseBody = new EventPlannerResponseBody(SUCCESS, eventMapper.toDto(event));
                 responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
-            }
-            else {
+            } else {
                 responseBody = new EventPlannerResponseBody("Unable to fetch event " + eventId + " from DB");
                 responseEntity = new ResponseEntity<>(responseBody, HttpStatus.NOT_FOUND);
             }
         } catch (JSONException e) {
-            e.printStackTrace();
             responseBody = new EventPlannerResponseBody(e.getMessage());
             responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
         } catch (EventServiceException e) {
@@ -92,7 +90,7 @@ public class EventController {
                 responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
             } else {
                 JSONObject requestBodyJson = new JSONObject(requestBody);
-                String strategy = requestBodyJson.optString("strategy");
+                String strategy = requestBodyJson.optString(STRATEGY);
                 JSONArray eventIdJsonArray = requestBodyJson.getJSONArray("eventIds");
                 List<Object> eventIdObjects = eventIdJsonArray.toList();
                 List<Long> eventIds = new ArrayList<>();
@@ -117,7 +115,36 @@ public class EventController {
                 }
             }
         } catch (JSONException e) {
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
             e.printStackTrace();
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return responseEntity;
+    }
+
+    @GetMapping("/getFromCity")
+    public ResponseEntity<EventPlannerResponseBody> getEventsFromCity(@RequestHeader(required = false) Map<String, String> requestHeaders,
+                                                                @RequestBody(required = false) String requestBody) {
+        EventPlannerResponseBody responseBody;
+        ResponseEntity<EventPlannerResponseBody> responseEntity;
+        try{
+            JSONObject requestBodyJson = new JSONObject(requestBody);
+            String city = requestBodyJson.getString("city");
+            String strategy = requestBodyJson.optString(STRATEGY);
+            List<Event> events;
+            if (UPCOMING.equals(strategy))
+                events = eventService.getEventsFromCityAfterDate(city);
+            else if (PAST.equals(strategy))
+                events = eventService.getEventsFromCityBeforeDate(city);
+            else
+                events = eventService.getEventsFromCity(city);
+            EventDTO [] eventDTOs = new EventDTO[events.size()];
+            responseBody = new EventPlannerResponseBody(SUCCESS, eventMapper.toDtos(events).toArray(eventDTOs));
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
+        } catch (JSONException e) {
             responseBody = new EventPlannerResponseBody(e.getMessage());
             responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
@@ -159,6 +186,7 @@ public class EventController {
             responseBody = new EventPlannerResponseBody(e.getMessage());
             responseEntity = new ResponseEntity<>(responseBody, HttpStatus.NO_CONTENT);
         } catch (Exception e) {
+            e.printStackTrace();
             responseBody = new EventPlannerResponseBody(e.getMessage());
             responseEntity = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -174,7 +202,7 @@ public class EventController {
             if (!(requestBody == null || requestBody.isBlank())) {
                 JSONObject requestBodyJson = new JSONObject(requestBody);
                 String title = requestBodyJson.optString(TITLE);
-                String strategy = requestBodyJson.optString("strategy");
+                String strategy = requestBodyJson.optString(STRATEGY);
                 if (title != null) {
                     List<Event> events;
                     if (UPCOMING.equals(strategy))
