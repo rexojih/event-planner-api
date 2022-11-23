@@ -57,7 +57,6 @@ public class EventController {
                 eventId = requestBodyJson.getLong(EVENT_ID);
             }
             Event event = eventService.getEventFromId(eventId);
-
             if (event != null) {
                 responseBody = new EventPlannerResponseBody(SUCCESS, eventMapper.toDto(event));
                 responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
@@ -81,39 +80,66 @@ public class EventController {
 
     @GetMapping("/getFromIds")
     public ResponseEntity<EventPlannerResponseBody> getEventsFromIds(@RequestHeader(required = false) Map<String, String> requestHeaders,
-                                                                     @RequestBody(required = false) String requestBody) {
+                                                                     @RequestBody String requestBody) {
         EventPlannerResponseBody responseBody;
         ResponseEntity<EventPlannerResponseBody> responseEntity;
         try{
-            if (requestBody == null || requestBody.isBlank()) {
-                responseBody = new EventPlannerResponseBody("Unable to get events using null eventIds");
+            JSONObject requestBodyJson = new JSONObject(requestBody);
+            String strategy = requestBodyJson.optString(STRATEGY);
+            JSONArray eventIdJsonArray = requestBodyJson.getJSONArray("eventIds");
+            List<Object> eventIdObjects = eventIdJsonArray.toList();
+            List<Long> eventIds = new ArrayList<>();
+            for (Object eventIdObject : eventIdObjects) {
+                Integer eventId = (Integer) eventIdObject;
+                eventIds.add(Long.valueOf(eventId));
+            }
+            if (eventIds.isEmpty()) {
+                responseBody = new EventPlannerResponseBody("Unable to get events from empty eventId list");
                 responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
             } else {
-                JSONObject requestBodyJson = new JSONObject(requestBody);
-                String strategy = requestBodyJson.optString(STRATEGY);
-                JSONArray eventIdJsonArray = requestBodyJson.getJSONArray("eventIds");
-                List<Object> eventIdObjects = eventIdJsonArray.toList();
-                List<Long> eventIds = new ArrayList<>();
-                for (Object eventIdObject : eventIdObjects) {
-                    Integer eventId = (Integer) eventIdObject;
-                    eventIds.add(Long.valueOf(eventId));
-                }
-                if (eventIds.isEmpty()) {
-                    responseBody = new EventPlannerResponseBody("Unable to get events from empty eventId list");
-                    responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
-                } else {
-                    List<Event> events;
-                    if (UPCOMING.equals(strategy))
-                        events = eventService.getUpcomingEventsFromIds(eventIds);
-                    else if (PAST.equals(strategy))
-                        events = eventService.getPastEventsFromIds(eventIds);
-                    else
-                        events = eventService.getEventsFromIds(eventIds);
-                    EventDTO [] eventDTOs = new EventDTO[events.size()];
-                    responseBody = new EventPlannerResponseBody(SUCCESS, eventMapper.toDtos(events).toArray(eventDTOs));
-                    responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
-                }
+                List<Event> events;
+                if (UPCOMING.equals(strategy))
+                    events = eventService.getUpcomingEventsFromIds(eventIds);
+                else if (PAST.equals(strategy))
+                    events = eventService.getPastEventsFromIds(eventIds);
+                else
+                    events = eventService.getEventsFromIds(eventIds);
+                EventDTO [] eventDTOs = new EventDTO[events.size()];
+                responseBody = new EventPlannerResponseBody(SUCCESS, eventMapper.toDtos(events).toArray(eventDTOs));
+                responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
             }
+        } catch (JSONException e) {
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            e.printStackTrace();
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return responseEntity;
+    }
+
+    @GetMapping("/getFromHostId")
+    public ResponseEntity<EventPlannerResponseBody> getEventsFromHostId(@RequestParam(value = "id", required = false) Long hostId,
+                                                                        @RequestHeader(required = false) Map<String, String> requestHeaders,
+                                                                        @RequestBody(required = false) String requestBody) {
+        EventPlannerResponseBody responseBody;
+        ResponseEntity<EventPlannerResponseBody> responseEntity;
+        try{
+            JSONObject requestBodyJson = new JSONObject(requestBody);
+            if (hostId == null)
+                hostId = requestBodyJson.getLong(USER_ID);
+            String strategy = requestBodyJson.optString(STRATEGY);
+            List<Event> events;
+            if (UPCOMING.equals(strategy))
+                events = eventService.getUpcomingEventsFromHostId(hostId);
+            else if (PAST.equals(strategy))
+                events = eventService.getPastEventsFromHostId(hostId);
+            else
+                events = eventService.getEventsFromHostId(hostId);
+            EventDTO [] eventDTOs = new EventDTO[events.size()];
+            responseBody = new EventPlannerResponseBody(SUCCESS, eventMapper.toDtos(events).toArray(eventDTOs));
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
         } catch (JSONException e) {
             responseBody = new EventPlannerResponseBody(e.getMessage());
             responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
@@ -170,10 +196,9 @@ public class EventController {
         EventPlannerResponseBody responseBody;
         ResponseEntity<EventPlannerResponseBody> responseEntity;
         try {
-            if (!(requestBody == null || requestBody.isBlank())) {
-                JSONObject requestBodyJson = new JSONObject(requestBody);
+            JSONObject requestBodyJson = new JSONObject(requestBody);
+            if (eventId == null)
                 eventId = requestBodyJson.getLong(EVENT_ID);
-            }
             Event event = eventService.getEventFromId(eventId);
             List<User> users = event.getAttendees();
             UserDTO [] userDTOs = new UserDTO[users.size()];
@@ -199,27 +224,22 @@ public class EventController {
         EventPlannerResponseBody responseBody;
         ResponseEntity<EventPlannerResponseBody> responseEntity;
         try {
-            if (!(requestBody == null || requestBody.isBlank())) {
-                JSONObject requestBodyJson = new JSONObject(requestBody);
-                String title = requestBodyJson.optString(TITLE);
-                String strategy = requestBodyJson.optString(STRATEGY);
-                if (title != null) {
-                    List<Event> events;
-                    if (UPCOMING.equals(strategy))
-                        events = eventService.getUpcomingEventsFromTitleStartingWith(title);
-                    else if (PAST.equals(strategy))
-                        events = eventService.getPastEventsFromTitleStartingWith(title);
-                    else
-                        events = eventService.getEventsFromTitleStartingWith(title);
-                    EventDTO [] eventDTOs = new EventDTO[events.size()];
-                    responseBody = new EventPlannerResponseBody(SUCCESS, eventMapper.toDtos(events).toArray(eventDTOs));
-                    responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
-                } else {
-                    responseBody = new EventPlannerResponseBody("Unable to search users. No 'name' found in request body.");
-                    responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
-                }
+            JSONObject requestBodyJson = new JSONObject(requestBody);
+            String title = requestBodyJson.optString(TITLE);
+            String strategy = requestBodyJson.optString(STRATEGY);
+            if (title != null) {
+                List<Event> events;
+                if (UPCOMING.equals(strategy))
+                    events = eventService.getUpcomingEventsFromTitleStartingWith(title);
+                else if (PAST.equals(strategy))
+                    events = eventService.getPastEventsFromTitleStartingWith(title);
+                else
+                    events = eventService.getEventsFromTitleStartingWith(title);
+                EventDTO [] eventDTOs = new EventDTO[events.size()];
+                responseBody = new EventPlannerResponseBody(SUCCESS, eventMapper.toDtos(events).toArray(eventDTOs));
+                responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
             } else {
-                responseBody = new EventPlannerResponseBody("Unable to search users. Invalid JSON.");
+                responseBody = new EventPlannerResponseBody("Unable to search events. No 'title' found in request body.");
                 responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
             }
         } catch (JSONException e) {
@@ -245,7 +265,7 @@ public class EventController {
             } else {
                 Event event = new Event();
                 JSONObject requestBodyJson = new JSONObject(requestBody);
-                if (!validRequestBodyJson(requestBodyJson, HOST_ID)) {
+                if (invalidRequestBodyJson(requestBodyJson, HOST_ID)) {
                     responseBody = new EventPlannerResponseBody("Unable to add event with no host");
                     responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
                 } else {
@@ -285,7 +305,7 @@ public class EventController {
             } else {
                 Event updateEvent = new Event();
                 JSONObject requestBodyJson = new JSONObject(requestBody);
-                if (!validRequestBodyJson(requestBodyJson, EVENT_ID)) {
+                if (invalidRequestBodyJson(requestBodyJson, EVENT_ID)) {
                     responseBody = new EventPlannerResponseBody("Unable to update event with no eventId");
                     responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
                 } else {
@@ -323,7 +343,7 @@ public class EventController {
                 responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
             } else {
                 JSONObject requestBodyJson = new JSONObject(requestBody);
-                if (!validRequestBodyJson(requestBodyJson, EVENT_ID, USER_ID)) {
+                if (invalidRequestBodyJson(requestBodyJson, EVENT_ID, USER_ID)) {
                     responseBody = new EventPlannerResponseBody("Unable to add attendee to event with no eventId or userId");
                     responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
                 } else {
@@ -381,10 +401,10 @@ public class EventController {
         return responseEntity;
     }
 
-    private boolean validRequestBodyJson(JSONObject requestBodyJson, String... necessaryKeys) {
+    private boolean invalidRequestBodyJson(JSONObject requestBodyJson, String... necessaryKeys) {
         boolean result = false;
         for (String key : necessaryKeys) {
-            result = !requestBodyJson.isEmpty() && requestBodyJson.has(key) && requestBodyJson.get(key) != JSONObject.NULL;
+            result = requestBodyJson.isEmpty() || !requestBodyJson.has(key) || requestBodyJson.get(key) == JSONObject.NULL;
         }
         return result;
     }

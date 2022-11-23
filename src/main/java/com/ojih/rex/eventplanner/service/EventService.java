@@ -53,7 +53,7 @@ public class EventService {
     }
 
     private boolean validMaxAttendees(Integer newMaxAttendees, Event event) {
-        return newMaxAttendees > 0 && newMaxAttendees >= event.getAttendees().size();
+        return newMaxAttendees > event.getAttendees().size();
     }
 
     public Event addEventAttendee(Long eventId, User newAttendee) throws EventServiceException {
