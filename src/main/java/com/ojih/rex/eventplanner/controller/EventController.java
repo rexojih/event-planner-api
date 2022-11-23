@@ -52,7 +52,7 @@ public class EventController {
         EventPlannerResponseBody responseBody;
         ResponseEntity<EventPlannerResponseBody> responseEntity;
         try{
-            if (!(requestBody == null || requestBody.isBlank())) {
+            if (eventId == null && requestBody != null && !requestBody.isBlank()) {
                 JSONObject requestBodyJson = new JSONObject(requestBody);
                 eventId = requestBodyJson.getLong(EVENT_ID);
             }
@@ -119,41 +119,9 @@ public class EventController {
         return responseEntity;
     }
 
-    @GetMapping("/getFromHostId")
-    public ResponseEntity<EventPlannerResponseBody> getEventsFromHostId(@RequestParam(value = "id", required = false) Long hostId,
-                                                                        @RequestHeader(required = false) Map<String, String> requestHeaders,
-                                                                        @RequestBody(required = false) String requestBody) {
-        EventPlannerResponseBody responseBody;
-        ResponseEntity<EventPlannerResponseBody> responseEntity;
-        try{
-            JSONObject requestBodyJson = new JSONObject(requestBody);
-            if (hostId == null)
-                hostId = requestBodyJson.getLong(USER_ID);
-            String strategy = requestBodyJson.optString(STRATEGY);
-            List<Event> events;
-            if (UPCOMING.equals(strategy))
-                events = eventService.getUpcomingEventsFromHostId(hostId);
-            else if (PAST.equals(strategy))
-                events = eventService.getPastEventsFromHostId(hostId);
-            else
-                events = eventService.getEventsFromHostId(hostId);
-            EventDTO [] eventDTOs = new EventDTO[events.size()];
-            responseBody = new EventPlannerResponseBody(SUCCESS, eventMapper.toDtos(events).toArray(eventDTOs));
-            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
-        } catch (JSONException e) {
-            responseBody = new EventPlannerResponseBody(e.getMessage());
-            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
-        } catch (Exception e) {
-            e.printStackTrace();
-            responseBody = new EventPlannerResponseBody(e.getMessage());
-            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        return responseEntity;
-    }
-
     @GetMapping("/getFromCity")
     public ResponseEntity<EventPlannerResponseBody> getEventsFromCity(@RequestHeader(required = false) Map<String, String> requestHeaders,
-                                                                @RequestBody(required = false) String requestBody) {
+                                                                      @RequestBody(required = false) String requestBody) {
         EventPlannerResponseBody responseBody;
         ResponseEntity<EventPlannerResponseBody> responseEntity;
         try{
@@ -196,9 +164,10 @@ public class EventController {
         EventPlannerResponseBody responseBody;
         ResponseEntity<EventPlannerResponseBody> responseEntity;
         try {
-            JSONObject requestBodyJson = new JSONObject(requestBody);
-            if (eventId == null)
+            if (eventId == null && requestBody != null && !requestBody.isBlank()) {
+                JSONObject requestBodyJson = new JSONObject(requestBody);
                 eventId = requestBodyJson.getLong(EVENT_ID);
+            }
             Event event = eventService.getEventFromId(eventId);
             List<User> users = event.getAttendees();
             UserDTO [] userDTOs = new UserDTO[users.size()];
@@ -225,23 +194,35 @@ public class EventController {
         ResponseEntity<EventPlannerResponseBody> responseEntity;
         try {
             JSONObject requestBodyJson = new JSONObject(requestBody);
-            String title = requestBodyJson.optString(TITLE);
+            String title = requestBodyJson.getString(TITLE);
             String strategy = requestBodyJson.optString(STRATEGY);
-            if (title != null) {
-                List<Event> events;
+            String searchType = requestBodyJson.optString(SEARCH_TYPE);
+            List<Event> events;
+            if (STARTS_WITH.equals(searchType)) {
                 if (UPCOMING.equals(strategy))
                     events = eventService.getUpcomingEventsFromTitleStartingWith(title);
                 else if (PAST.equals(strategy))
                     events = eventService.getPastEventsFromTitleStartingWith(title);
                 else
                     events = eventService.getEventsFromTitleStartingWith(title);
-                EventDTO [] eventDTOs = new EventDTO[events.size()];
-                responseBody = new EventPlannerResponseBody(SUCCESS, eventMapper.toDtos(events).toArray(eventDTOs));
-                responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
+            } else if (CONTAINING.equals(searchType)) {
+                if (UPCOMING.equals(strategy))
+                    events = eventService.getUpcomingEventsFromTitleContaining(title);
+                else if (PAST.equals(strategy))
+                    events = eventService.getPastEventsFromTitleContaining(title);
+                else
+                    events = eventService.getEventsFromTitleContaining(title);
             } else {
-                responseBody = new EventPlannerResponseBody("Unable to search events. No 'title' found in request body.");
-                responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
+                if (UPCOMING.equals(strategy))
+                    events = eventService.getUpcomingEventsFromTitle(title);
+                else if (PAST.equals(strategy))
+                    events = eventService.getPastEventsFromTitle(title);
+                else
+                    events = eventService.getEventsFromTitle(title);
             }
+            EventDTO [] eventDTOs = new EventDTO[events.size()];
+            responseBody = new EventPlannerResponseBody(SUCCESS, eventMapper.toDtos(events).toArray(eventDTOs));
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
         } catch (JSONException e) {
             responseBody = new EventPlannerResponseBody(e.getMessage());
             responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);

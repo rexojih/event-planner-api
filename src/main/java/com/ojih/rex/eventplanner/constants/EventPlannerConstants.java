@@ -9,6 +9,9 @@ public class EventPlannerConstants {
     public static final String STRATEGY = "strategy";
     public static final String UPCOMING = "Upcoming";
     public static final String PAST = "Past";
+    public static final String SEARCH_TYPE = "searchType";
+    public static final String STARTS_WITH = "Starts With";
+    public static final String CONTAINING = "Containing";
 
     private EventPlannerConstants() {}
 }

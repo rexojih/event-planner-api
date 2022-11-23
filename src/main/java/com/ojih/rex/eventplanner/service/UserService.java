@@ -35,6 +35,20 @@ public class UserService {
         return merge(usersByUserName, usersByLastName, usersByFistName);
     }
 
+    public List<User> getUsersFromNameContaining(String name) {
+        List<User> usersByUserName = userRepository.findByUserNameContaining(name);
+        List<User> usersByFistName = userRepository.findByLastNameContaining(name);
+        List<User> usersByLastName = userRepository.findByFirstNameContaining(name);
+        return merge(usersByUserName, usersByLastName, usersByFistName);
+    }
+
+    public List<User> getUsersFromName(String name) {
+        List<User> usersByUserName = userRepository.findByUserName(name);
+        List<User> usersByFistName = userRepository.findByLastName(name);
+        List<User> usersByLastName = userRepository.findByFirstName(name);
+        return merge(usersByUserName, usersByLastName, usersByFistName);
+    }
+
     @SafeVarargs
     private List<User> merge(List<User>... userLists) {
         List<User> users = new ArrayList<>(userLists[0]);
@@ -100,7 +114,7 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public List<Long> eventsHosting(Long userId) {
+    public List<Long> getHostingEventIds(Long userId) {
         List<Long> eventIds = null;
         User user = userRepository.findDistinctByUserId(userId);
         if (!(user.getEvents() == null || user.getEvents().isEmpty())) {

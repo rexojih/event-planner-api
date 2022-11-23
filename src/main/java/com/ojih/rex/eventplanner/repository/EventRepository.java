@@ -22,6 +22,9 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     List<Event> findByTitleStartsWith(String title);
     List<Event> findByTitleStartsWithAndDateAfterOrderByDateAsc(String title, Date after);
     List<Event> findByTitleStartsWithAndDateBeforeOrderByDateDesc(String title, Date before);
+    List<Event> findByTitleContaining(String title);
+    List<Event> findByTitleContainingAndDateAfterOrderByDateAsc(String title, Date after);
+    List<Event> findByTitleContainingAndDateBeforeOrderByDateDesc(String title, Date after);
     List<Event> findByDateAfterOrderByDateAsc(Date date);
     List<Event> findByDateBeforeOrderByDateDesc(Date date);
     List<Event> findByDateBetweenOrderByDateAsc(Date after, Date before);

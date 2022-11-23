@@ -127,6 +127,18 @@ public class EventService {
         return eventRepository.findByTitleStartsWithAndDateBeforeOrderByDateDesc(title, new Date());
     }
 
+    public List<Event> getEventsFromTitleContaining(String title) {
+        return eventRepository.findByTitleContaining(title);
+    }
+
+    public List<Event> getUpcomingEventsFromTitleContaining(String title) {
+        return eventRepository.findByTitleContainingAndDateAfterOrderByDateAsc(title, new Date());
+    }
+
+    public List<Event> getPastEventsFromTitleContaining(String title) {
+        return eventRepository.findByTitleContainingAndDateBeforeOrderByDateDesc(title, new Date());
+    }
+
     public List<Event> getEventsFromAfterDate(Date date) {
         return eventRepository.findByDateAfterOrderByDateAsc(date);
     }

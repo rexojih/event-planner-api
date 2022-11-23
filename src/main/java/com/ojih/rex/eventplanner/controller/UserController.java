@@ -22,8 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.ojih.rex.eventplanner.constants.EventPlannerConstants.SUCCESS;
-import static com.ojih.rex.eventplanner.constants.EventPlannerConstants.USER_ID;
+import static com.ojih.rex.eventplanner.constants.EventPlannerConstants.*;
 
 @RestController
 @RequestMapping("/api/v1/user")
@@ -52,12 +51,11 @@ public class UserController {
         EventPlannerResponseBody responseBody;
         ResponseEntity<EventPlannerResponseBody> responseEntity;
         try {
-            if (!(requestBody == null || requestBody.isBlank())) {
+            if (userId == null && requestBody != null && !requestBody.isBlank()) {
                 JSONObject requestBodyJson = new JSONObject(requestBody);
                 userId = requestBodyJson.getLong(USER_ID);
             }
             User user = userService.getUserFromId(userId);
-
             if (user != null) {
                 responseBody = new EventPlannerResponseBody(SUCCESS, userMapper.toDto(user));
                 responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
@@ -92,7 +90,7 @@ public class UserController {
         EventPlannerResponseBody responseBody;
         ResponseEntity<EventPlannerResponseBody> responseEntity;
         try {
-            if (!(requestBody == null || requestBody.isBlank())) {
+            if (requestBody != null && !requestBody.isBlank() && userId == null) {
                 JSONObject requestBodyJson = new JSONObject(requestBody);
                 userId = requestBodyJson.getLong(USER_ID);
             }
@@ -120,22 +118,19 @@ public class UserController {
         EventPlannerResponseBody responseBody;
         ResponseEntity<EventPlannerResponseBody> responseEntity;
         try {
-            if (!(requestBody == null || requestBody.isBlank())) {
-                JSONObject requestBodyJson = new JSONObject(requestBody);
-                String name = requestBodyJson.optString("name");
-                if (name != null) {
-                    List<User> users = userService.getUserFromNameStartingWith(name);
-                    UserDTO [] userDTOs = new UserDTO[users.size()];
-                    responseBody = new EventPlannerResponseBody(SUCCESS, userMapper.toDtos(users).toArray(userDTOs));
-                    responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
-                } else {
-                    responseBody = new EventPlannerResponseBody("Unable to search users. No 'name' found in request body.");
-                    responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
-                }
-            } else {
-                responseBody = new EventPlannerResponseBody("Unable to search users. Invalid JSON.");
-                responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
-            }
+            JSONObject requestBodyJson = new JSONObject(requestBody);
+            String name = requestBodyJson.getString("name");
+            String searchType = requestBodyJson.optString(SEARCH_TYPE);
+            List<User> users;
+            if (STARTS_WITH.equals(searchType))
+                users = userService.getUserFromNameStartingWith(name);
+            else if (CONTAINING.equals(searchType))
+                users = userService.getUsersFromNameContaining(name);
+            else
+                users = userService.getUsersFromName(name);
+            UserDTO [] userDTOs = new UserDTO[users.size()];
+            responseBody = new EventPlannerResponseBody(SUCCESS, userMapper.toDtos(users).toArray(userDTOs));
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
         } catch (JSONException e) {
             responseBody = new EventPlannerResponseBody(e.getMessage());
             responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
@@ -239,7 +234,7 @@ public class UserController {
                 userId = requestBodyJson.getLong(USER_ID);
             }
             if (userService.userExists(userId)) {
-                List<Long> eventIds = userService.eventsHosting(userId);
+                List<Long> eventIds = userService.getHostingEventIds(userId);
                 if (eventIds != null) {
                     eventService.removeEvents(eventIds);
                 }
