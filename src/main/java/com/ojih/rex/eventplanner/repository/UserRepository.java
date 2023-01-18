@@ -12,6 +12,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     User findDistinctByUserId(Long userId);
     List<User> findByUserIdIn(List<Long> userIds);
     List<User> findByUserName(String userName);
+    User findDistinctByUserNameOrEmail(String userName, String email);
     List<User> findByUserNameStartsWith(String userName);
     List<User> findByUserNameContaining(String userName);
     List<User> findByFirstName(String firstName);
@@ -23,7 +24,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findByLastNameContaining(String lastName);
     List<User> findByFirstNameOrLastName(String first, String last);
     List<User> findByFirstNameOrLastNameContaining(String first, String last);
-    List<User> findDistinctByEmail(String email);
+    User findDistinctByEmail(String email);
     List<User> findByLocationCity(String city);
     List<User> findByLocationState(String state);
     List<User> findByLocationPostalCode(String postalCOde);

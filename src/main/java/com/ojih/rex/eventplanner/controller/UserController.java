@@ -83,6 +83,32 @@ public class UserController {
         return new ResponseEntity<>(responseBody, HttpStatus.OK);
     }
 
+    @GetMapping("authenticate")
+    public ResponseEntity<EventPlannerResponseBody> authenticateUser(@RequestHeader(required = false) Map<String, String> requestHeaders,
+                                                                     @RequestBody String requestBody) {
+        EventPlannerResponseBody responseBody;
+        ResponseEntity<EventPlannerResponseBody> responseEntity;
+        try {
+            JSONObject requestBodyJson = new JSONObject(requestBody);
+            String username = requestBodyJson.getString(USERNAME);
+            String password = requestBodyJson.optString(PASSWORD);
+            User user = userService.authenticateUser(username, password);
+            responseBody = new EventPlannerResponseBody(SUCCESS, userMapper.toDto(user));
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
+        } catch (JSONException e) {
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
+        } catch (UserServiceException e) {
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.UNAUTHORIZED);
+        } catch (Exception e) {
+            e.printStackTrace();
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return responseEntity;
+    }
+
     @GetMapping("/events")
     public ResponseEntity<EventPlannerResponseBody> getUserEvents(@RequestParam(value = "id", required = false) Long userId,
                                                                   @RequestHeader(required = false) Map<String, String> requestHeaders,

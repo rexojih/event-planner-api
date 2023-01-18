@@ -28,6 +28,15 @@ public class UserService {
         return user;
     }
 
+    public User authenticateUser(String usernameOrEmail, String password) throws UserServiceException {
+        User user = userRepository.findDistinctByUserNameOrEmail(usernameOrEmail, usernameOrEmail);
+        if (user != null && user.isPassword(password))
+            return user;
+        else
+            throw new UserServiceException("Unable to authenticate. Username or password is incorrect");
+    }
+
+
     public List<User> getUserFromNameStartingWith(String name) {
         List<User> usersByUserName = userRepository.findByUserNameStartsWith(name);
         List<User> usersByFistName = userRepository.findByLastNameStartsWith(name);

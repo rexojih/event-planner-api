@@ -8,6 +8,8 @@ public class EventPlannerConstants {
     public static final String CITY = "city";
     public static final String USER_ID = "userId";
     public static final String NAME = "name";
+    public static final String USERNAME = "username";
+    public static final String PASSWORD = "password";
     public static final String SUCCESS = "Success";
     public static final String STRATEGY = "strategy";
     public static final String UPCOMING = "Upcoming";
