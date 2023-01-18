@@ -119,7 +119,7 @@ public class UserController {
         ResponseEntity<EventPlannerResponseBody> responseEntity;
         try {
             JSONObject requestBodyJson = new JSONObject(requestBody);
-            String name = requestBodyJson.getString("name");
+            String name = requestBodyJson.getString(NAME);
             String searchType = requestBodyJson.optString(SEARCH_TYPE);
             List<User> users;
             if (STARTS_WITH.equals(searchType))
@@ -239,7 +239,7 @@ public class UserController {
                     eventService.removeEvents(eventIds);
                 }
                 userService.removeUser(userId);
-                responseBody = new EventPlannerResponseBody("User " + userId + " and it's Event(s) " + eventIds + " removed.");
+                responseBody = new EventPlannerResponseBody("User " + userId + " and its Event(s) " + eventIds + " removed.");
                 responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
             } else {
                 responseBody = new EventPlannerResponseBody("User " + userId + " does not exist");

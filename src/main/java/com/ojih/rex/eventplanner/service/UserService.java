@@ -93,7 +93,7 @@ public class UserService {
     }
 
     private boolean validPasswordChange(User user, String newPassword, String originalPassword) throws UserServiceException {
-        if (newPassword != null && !user.isPassword(originalPassword))
+        if (newPassword != null && !newPassword.isBlank() && !user.isPassword(originalPassword))
             throw new UserServiceException("Unable to update user password. Incorrect original password");
         return newPassword != null && !newPassword.isBlank() && user.isPassword(originalPassword);
     }

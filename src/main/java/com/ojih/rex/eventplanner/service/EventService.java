@@ -167,11 +167,11 @@ public class EventService {
         return eventRepository.findByLocationCity(city);
     }
 
-    public List<Event> getEventsFromCityAfterDate(String city) {
+    public List<Event> getUpcomingEventsFromCity(String city) {
         return eventRepository.findByLocationCityAndDateAfterOrderByDateAsc(city, new Date());
     }
 
-    public List<Event> getEventsFromCityBeforeDate(String city) {
+    public List<Event> getPastEventsFromCity(String city) {
         return eventRepository.findByLocationCityAndDateBeforeOrderByDateDesc(city, new Date());
     }
 
