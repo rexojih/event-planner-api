@@ -45,16 +45,12 @@ public class UserController {
     }
 
     @GetMapping("/get")
-    public ResponseEntity<EventPlannerResponseBody> getUser(@RequestParam(value = "id", required = false) Long userId,
-                                                            @RequestHeader(required = false) Map<String, String> requestHeaders,
-                                                            @RequestBody(required = false) String requestBody) {
+    public ResponseEntity<EventPlannerResponseBody> getUser(@RequestParam(value = "id") Long userId,
+                                                            @RequestHeader(required = false) Map<String, String> requestHeaders) {
+
         EventPlannerResponseBody responseBody;
         ResponseEntity<EventPlannerResponseBody> responseEntity;
         try {
-            if (userId == null && requestBody != null && !requestBody.isBlank()) {
-                JSONObject requestBodyJson = new JSONObject(requestBody);
-                userId = requestBodyJson.getLong(USER_ID);
-            }
             User user = userService.getUserFromId(userId);
             if (user != null) {
                 responseBody = new EventPlannerResponseBody(SUCCESS, userMapper.toDto(user));
@@ -63,10 +59,6 @@ public class UserController {
                 responseBody = new EventPlannerResponseBody("Unable to fetch user " + userId + " from DB");
                 responseEntity = new ResponseEntity<>(responseBody, HttpStatus.NOT_FOUND);
             }
-        } catch (JSONException e) {
-            e.printStackTrace();
-            responseBody = new EventPlannerResponseBody(e.getMessage());
-            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             e.printStackTrace();
             responseBody = new EventPlannerResponseBody(e.getMessage());
@@ -83,7 +75,31 @@ public class UserController {
         return new ResponseEntity<>(responseBody, HttpStatus.OK);
     }
 
-    @GetMapping("authenticate")
+    @GetMapping("/events")
+    public ResponseEntity<EventPlannerResponseBody> getUserEvents(@RequestParam(value = "id", required = false) Long userId,
+                                                                  @RequestHeader(required = false) Map<String, String> requestHeaders) {
+        EventPlannerResponseBody responseBody;
+        ResponseEntity<EventPlannerResponseBody> responseEntity;
+        try {
+            User user = userService.getUserFromId(userId);
+            List<Event> events = user.getEvents();
+            EventDTO [] eventDTOs = new EventDTO[events.size()];
+            responseBody = new EventPlannerResponseBody(SUCCESS, eventMapper.toDtos(events).toArray(eventDTOs));
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
+        } catch (JSONException e) {
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
+        } catch (UserServiceException e) {
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.NO_CONTENT);
+        } catch (Exception e) {
+            responseBody = new EventPlannerResponseBody(e.getMessage());
+            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return responseEntity;
+    }
+
+    @PostMapping("/authenticate")
     public ResponseEntity<EventPlannerResponseBody> authenticateUser(@RequestHeader(required = false) Map<String, String> requestHeaders,
                                                                      @RequestBody String requestBody) {
         EventPlannerResponseBody responseBody;
@@ -109,36 +125,7 @@ public class UserController {
         return responseEntity;
     }
 
-    @GetMapping("/events")
-    public ResponseEntity<EventPlannerResponseBody> getUserEvents(@RequestParam(value = "id", required = false) Long userId,
-                                                                  @RequestHeader(required = false) Map<String, String> requestHeaders,
-                                                                  @RequestBody(required = false) String requestBody) {
-        EventPlannerResponseBody responseBody;
-        ResponseEntity<EventPlannerResponseBody> responseEntity;
-        try {
-            if (requestBody != null && !requestBody.isBlank() && userId == null) {
-                JSONObject requestBodyJson = new JSONObject(requestBody);
-                userId = requestBodyJson.getLong(USER_ID);
-            }
-            User user = userService.getUserFromId(userId);
-            List<Event> events = user.getEvents();
-            EventDTO [] eventDTOs = new EventDTO[events.size()];
-            responseBody = new EventPlannerResponseBody(SUCCESS, eventMapper.toDtos(events).toArray(eventDTOs));
-            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
-        } catch (JSONException e) {
-            responseBody = new EventPlannerResponseBody(e.getMessage());
-            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
-        } catch (UserServiceException e) {
-            responseBody = new EventPlannerResponseBody(e.getMessage());
-            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.NO_CONTENT);
-        } catch (Exception e) {
-            responseBody = new EventPlannerResponseBody(e.getMessage());
-            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        return responseEntity;
-    }
-
-    @GetMapping("/search")
+    @PostMapping("/search")
     public ResponseEntity<EventPlannerResponseBody> searchUserByName(@RequestHeader(required = false) Map<String, String> requestHeaders,
                                                                      @RequestBody(required = false) String requestBody) {
         EventPlannerResponseBody responseBody;
