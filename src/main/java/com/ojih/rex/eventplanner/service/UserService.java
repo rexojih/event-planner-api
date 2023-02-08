@@ -1,39 +1,36 @@
 package com.ojih.rex.eventplanner.service;
 
-import com.ojih.rex.eventplanner.exception.UserServiceException;
+import com.ojih.rex.eventplanner.exception.user.ExistingUserException;
+import com.ojih.rex.eventplanner.exception.user.UserNotFoundException;
+import com.ojih.rex.eventplanner.exception.user.UserUnauthenticatedException;
 import com.ojih.rex.eventplanner.model.Event;
-import com.ojih.rex.eventplanner.model.Location;
 import com.ojih.rex.eventplanner.model.User;
 import com.ojih.rex.eventplanner.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
 
-    @Autowired
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
-
-    public User getUserFromId(Long userId) throws UserServiceException {
+    public User getUserFromId(Long userId) throws UserNotFoundException {
         User user = userRepository.findDistinctByUserId(userId);
         if (user == null)
-            throw new UserServiceException("Unable to get user. UserId " + userId +" not found");
+            throw new UserNotFoundException("Unable to get user. UserId " + userId + " not found");
         return user;
     }
 
-    public User authenticateUser(String usernameOrEmail, String password) throws UserServiceException {
+    public User authenticateUser(String usernameOrEmail, String password) throws UserUnauthenticatedException {
         User user = userRepository.findDistinctByUserNameOrEmail(usernameOrEmail, usernameOrEmail);
         if (user != null && user.isPassword(password))
             return user;
         else
-            throw new UserServiceException("Unable to authenticate. Username or password is incorrect");
+            throw new UserUnauthenticatedException("Unable to authenticate. Username or password is incorrect");
     }
 
 
@@ -70,40 +67,42 @@ public class UserService {
         return users;
     }
 
-    public User storeUser(User user) throws UserServiceException {
+    public User storeUser(User user) throws ExistingUserException {
         if (nonUniqueUserName(user.getUserName()) && nonUniqueEmail(user.getEmail()))
-            throw new UserServiceException("Username and email are already being used.");
+            throw new ExistingUserException("Username and email are already being used.");
         else if (nonUniqueUserName(user.getUserName()))
-            throw new UserServiceException("Username is already being used");
+            throw new ExistingUserException("Username is already being used");
         else if (nonUniqueEmail(user.getEmail()))
-            throw new UserServiceException("Email is already being used");
+            throw new ExistingUserException("Email is already being used");
         return userRepository.save(user);
     }
 
-    public User updateUser(Long userId, User updateUser, String originalPassword) throws UserServiceException {
+    public User updateUser(Long userId, User updateUser, String originalPassword) throws UserNotFoundException, UserUnauthenticatedException {
         User user = userRepository.findDistinctByUserId(userId);
         if (user == null)
-            throw new UserServiceException("Unable to update user. UserId " + userId + " not found.");
-        mapUpdate(user, updateUser.getUserName(), updateUser.getPassword(), originalPassword, updateUser.getFirstName(), updateUser.getLastName(), updateUser.getLocation());
+            throw new UserNotFoundException("Unable to update user. UserId " + userId + " not found.");
+        mapUpdate(user, updateUser, originalPassword);
         return userRepository.save(user);
     }
 
-    private void mapUpdate(User user, String newUserName, String newPassword, String originalPassword, String newFirstName, String newLastName, Location newLocation) throws UserServiceException {
-        if (newUserName != null && !newUserName.isBlank())
-            user.setUserName(newUserName);
-        if (validPasswordChange(user, newPassword, originalPassword))
-            user.setPassword(newPassword);
-        if (newFirstName != null && !newFirstName.isBlank())
-            user.setFirstName(newFirstName);
-        if (newLastName != null && !newLastName.isBlank())
-            user.setLastName(newLastName);
-        if (newLocation != null)
-            user.setLocation(newLocation);
+    private void mapUpdate(User user, User updateUser, String originalPassword) throws UserUnauthenticatedException {
+        if (updateUser.getUserName() != null && !updateUser.getUserName().isBlank())
+            user.setUserName(updateUser.getUserName());
+        if (validPasswordChange(user, updateUser.getPassword(), originalPassword))
+            user.setPassword(updateUser.getPassword());
+        if (updateUser.getEmail() != null && !updateUser.getEmail().isBlank())
+            user.setEmail(updateUser.getEmail());
+        if (updateUser.getFirstName() != null && !updateUser.getFirstName().isBlank())
+            user.setFirstName(updateUser.getFirstName());
+        if (updateUser.getLastName() != null && !updateUser.getLastName().isBlank())
+            user.setLastName(updateUser.getLastName());
+        if (updateUser.getLocation() != null)
+            user.setLocation(updateUser.getLocation());
     }
 
-    private boolean validPasswordChange(User user, String newPassword, String originalPassword) throws UserServiceException {
+    private boolean validPasswordChange(User user, String newPassword, String originalPassword) throws UserUnauthenticatedException {
         if (newPassword != null && !newPassword.isBlank() && !user.isPassword(originalPassword))
-            throw new UserServiceException("Unable to update user password. Incorrect original password");
+            throw new UserUnauthenticatedException("Unable to update user password. Incorrect original password");
         return newPassword != null && !newPassword.isBlank() && user.isPassword(originalPassword);
     }
 
@@ -124,10 +123,9 @@ public class UserService {
     }
 
     public List<Long> getHostingEventIds(Long userId) {
-        List<Long> eventIds = null;
+        List<Long> eventIds = new ArrayList<>();
         User user = userRepository.findDistinctByUserId(userId);
         if (!(user.getEvents() == null || user.getEvents().isEmpty())) {
-            eventIds = new ArrayList<>();
             for (Event event : user.getEvents()) {
                 if (event.getHostId().equals(userId))
                     eventIds.add(event.getEventId());
@@ -136,7 +134,11 @@ public class UserService {
         return eventIds;
     }
 
-    public void removeUser(Long userId) {
+    public List<Long> removeUser(Long userId) throws UserNotFoundException {
+        if (!userExists(userId))
+            throw new UserNotFoundException("User " + userId + " does not exist");
+        List<Long> hostedEventIds = getHostingEventIds(userId);
         userRepository.deleteById(userId);
+        return hostedEventIds;
     }
 }

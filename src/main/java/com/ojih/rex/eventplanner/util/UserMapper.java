@@ -1,4 +1,4 @@
-package com.ojih.rex.eventplanner.utilities;
+package com.ojih.rex.eventplanner.util;
 
 import com.ojih.rex.eventplanner.model.Event;
 import com.ojih.rex.eventplanner.model.User;
@@ -12,7 +12,7 @@ import java.util.List;
 public class UserMapper implements Mapper<UserDTO, User> {
 
     @Override
-    public UserDTO toDto(User user) {
+    public UserDTO toDTO(User user) {
         List<Long> eventIds = null;
 
         if (user.getEvents() != null) {
@@ -34,10 +34,10 @@ public class UserMapper implements Mapper<UserDTO, User> {
     }
 
     @Override
-    public List<UserDTO> toDtos(List<User> users) {
+    public List<UserDTO> toDTOs(List<User> users) {
         List<UserDTO> eventDTOS = new ArrayList<>();
         for (User user : users) {
-            eventDTOS.add(this.toDto(user));
+            eventDTOS.add(this.toDTO(user));
         }
         return eventDTOS;
     }

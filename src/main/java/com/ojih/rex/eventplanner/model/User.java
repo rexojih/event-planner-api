@@ -1,6 +1,7 @@
 package com.ojih.rex.eventplanner.model;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -9,8 +10,9 @@ import java.util.List;
 
 @Entity
 @Data
-@AllArgsConstructor
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 public class User {
 
     @Id
@@ -25,7 +27,8 @@ public class User {
     )
     private Long userId;
     @Column(
-            nullable = false
+            nullable = false,
+            unique = true
     )
     private String userName;
     @Column(
@@ -37,7 +40,8 @@ public class User {
     )
     private String lastName;
     @Column(
-            nullable = false
+            nullable = false,
+            unique = true
     )
     private String email;
     @Column(

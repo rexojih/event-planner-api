@@ -1,22 +1,22 @@
-package com.ojih.rex.eventplanner.model;
+package com.ojih.rex.eventplanner.model.response;
 
 import com.ojih.rex.eventplanner.model.dto.DTO;
 
-public class EventPlannerResponseBody {
+public class EventPlannerResponse {
 
     String responseMessage;
-    DTO [] data;
+    DTO[] data;
 
-    public EventPlannerResponseBody(DTO... data) {
+    public EventPlannerResponse(DTO... data) {
         this.data = data;
     }
 
-    public EventPlannerResponseBody(String responseMessage) {
+    public EventPlannerResponse(String responseMessage) {
         this.responseMessage = responseMessage;
     }
 
-    public EventPlannerResponseBody(String responseMessage,
-                                    DTO... data) {
+    public EventPlannerResponse(String responseMessage,
+                                DTO... data) {
         this.responseMessage = responseMessage;
         this.data = data;
     }

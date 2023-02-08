@@ -1,20 +1,22 @@
 package com.ojih.rex.eventplanner.model;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 @Entity
 @Table(name = "Event")
 @Data
-@AllArgsConstructor
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 public class Event {
 
     @Id
@@ -136,8 +138,8 @@ public class Event {
 
     public void addAttendee(User user) {
         if (attendees == null) {
-            attendees = new ArrayList<>(Arrays.asList(user));
-        } else if (attendees.size() < maxAttendees){
+            attendees = new ArrayList<>(Collections.singletonList(user));
+        } else if (attendees.size() < maxAttendees) {
             ArrayList<User> updatedAttendees = new ArrayList<>(attendees);
             updatedAttendees.add(user);
             this.setAttendees(updatedAttendees);

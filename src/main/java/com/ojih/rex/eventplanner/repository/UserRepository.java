@@ -10,30 +10,54 @@ import java.util.List;
 public interface UserRepository extends JpaRepository<User, Long> {
 
     User findDistinctByUserId(Long userId);
+
     List<User> findByUserIdIn(List<Long> userIds);
+
     List<User> findByUserName(String userName);
+
     User findDistinctByUserNameOrEmail(String userName, String email);
+
     List<User> findByUserNameStartsWith(String userName);
+
     List<User> findByUserNameContaining(String userName);
+
     List<User> findByFirstName(String firstName);
+
     List<User> findByFirstNameStartsWith(String firstName);
 
     List<User> findByFirstNameContaining(String firstName);
+
     List<User> findByLastName(String lastName);
+
     List<User> findByLastNameStartsWith(String lastName);
+
     List<User> findByLastNameContaining(String lastName);
+
     List<User> findByFirstNameOrLastName(String first, String last);
+
     List<User> findByFirstNameOrLastNameContaining(String first, String last);
+
     User findDistinctByEmail(String email);
+
     List<User> findByLocationCity(String city);
+
     List<User> findByLocationState(String state);
+
     List<User> findByLocationPostalCode(String postalCOde);
+
     List<User> findByLocationCityOrLocationState(String city, String state);
+
     List<User> findByLocationCityAndLocationState(String city, String state);
+
     List<User> findByLocationCityOrLocationPostalCode(String city, String postalCode);
+
     List<User> findByLocationCityAndLocationPostalCode(String city, String postalCode);
+
     List<User> findByLocationStateOrLocationPostalCode(String state, String postalCode);
+
     List<User> findByLocationStateAndLocationPostalCode(String state, String postalCode);
+
     boolean existsByUserName(String userName);
+
     boolean existsByEmail(String email);
 }

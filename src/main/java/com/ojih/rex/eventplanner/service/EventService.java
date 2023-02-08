@@ -1,11 +1,11 @@
 package com.ojih.rex.eventplanner.service;
 
-import com.ojih.rex.eventplanner.exception.EventServiceException;
+import com.ojih.rex.eventplanner.exception.event.EventNotFoundException;
 import com.ojih.rex.eventplanner.model.Event;
 import com.ojih.rex.eventplanner.model.Location;
 import com.ojih.rex.eventplanner.model.User;
 import com.ojih.rex.eventplanner.repository.EventRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -13,15 +13,11 @@ import java.util.Date;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class EventService {
 
     private final EventRepository eventRepository;
     private static final String NOT_FOUND = " not found in DB";
-
-    @Autowired
-    public EventService(EventRepository eventRepository) {
-        this.eventRepository = eventRepository;
-    }
 
     public Event storeEvent(User host, Event event) {
         event.setHostId(host.getUserId());
@@ -29,10 +25,10 @@ public class EventService {
         return eventRepository.save(event);
     }
 
-    public Event updateEvent(Long eventId, Event updateEvent) throws EventServiceException {
+    public Event updateEvent(Long eventId, Event updateEvent) throws EventNotFoundException {
         Event event = eventRepository.findDistinctByEventId(eventId);
         if (event == null)
-            throw new EventServiceException("Unable to update event. EventId " + eventId + NOT_FOUND);
+            throw new EventNotFoundException("Unable to update event. EventId " + eventId + NOT_FOUND);
         mapUpdate(event, updateEvent.getTitle(), updateEvent.getDate(), updateEvent.getLocation(), updateEvent.getDescription(), updateEvent.getCategory(), updateEvent.getMaxAttendees());
         return eventRepository.save(event);
     }
@@ -56,15 +52,15 @@ public class EventService {
         return newMaxAttendees > event.getAttendees().size();
     }
 
-    public Event addEventAttendee(Long eventId, User newAttendee) throws EventServiceException {
+    public Event addEventAttendee(Long eventId, User newAttendee) throws EventNotFoundException {
         Event event = eventRepository.findDistinctByEventId(eventId);
         if (event == null)
-            throw new EventServiceException("Unable to add attendee. EventId " + eventId + NOT_FOUND);
+            throw new EventNotFoundException("Unable to add attendee. EventId " + eventId + NOT_FOUND);
         event.addAttendee(newAttendee);
         return eventRepository.save(event);
     }
 
-    public boolean eventExists(Long eventId) {
+    private boolean eventExists(Long eventId) {
         return eventRepository.existsById(eventId);
     }
 
@@ -72,10 +68,10 @@ public class EventService {
         return eventRepository.findAll();
     }
 
-    public Event getEventFromId(Long eventId) throws EventServiceException {
+    public Event getEventFromId(Long eventId) throws EventNotFoundException {
         Event event = eventRepository.findDistinctByEventId(eventId);
         if (event == null)
-            throw new EventServiceException("Unable to get event. EventId " + eventId + NOT_FOUND);
+            throw new EventNotFoundException("Unable to get event. EventId " + eventId + NOT_FOUND);
         return event;
     }
 
@@ -239,7 +235,9 @@ public class EventService {
         return eventRepository.findByLocationStateAndLocationPostalCodeOrderByDateDesc(state, postalCode);
     }
 
-    public void removeEvent(Long eventId) {
+    public void removeEvent(Long eventId) throws EventNotFoundException {
+        if (!eventExists(eventId))
+            throw new EventNotFoundException("Event " + eventId + " does not exist");
         eventRepository.deleteById(eventId);
     }
 

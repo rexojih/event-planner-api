@@ -1,28 +1,25 @@
 package com.ojih.rex.eventplanner.controller;
 
-import com.ojih.rex.eventplanner.exception.UserServiceException;
+import com.ojih.rex.eventplanner.annotation.DataQuality;
 import com.ojih.rex.eventplanner.model.Event;
-import com.ojih.rex.eventplanner.model.EventPlannerResponseBody;
-import com.ojih.rex.eventplanner.model.Location;
 import com.ojih.rex.eventplanner.model.User;
 import com.ojih.rex.eventplanner.model.dto.EventDTO;
 import com.ojih.rex.eventplanner.model.dto.UserDTO;
+import com.ojih.rex.eventplanner.model.request.EventPlannerRequest;
+import com.ojih.rex.eventplanner.model.response.EventPlannerResponse;
 import com.ojih.rex.eventplanner.service.EventService;
 import com.ojih.rex.eventplanner.service.UserService;
-import com.ojih.rex.eventplanner.utilities.Mapper;
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.ojih.rex.eventplanner.util.Mapper;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
-import static com.ojih.rex.eventplanner.constants.EventPlannerConstants.*;
+import static com.ojih.rex.eventplanner.constant.EventPlannerConstants.*;
 
 @RestController
 @RequestMapping("/api/v1/user")
@@ -45,244 +42,102 @@ public class UserController {
     }
 
     @GetMapping("/get")
-    public ResponseEntity<EventPlannerResponseBody> getUser(@RequestParam(value = "id") Long userId,
-                                                            @RequestHeader(required = false) Map<String, String> requestHeaders) {
-
-        EventPlannerResponseBody responseBody;
-        ResponseEntity<EventPlannerResponseBody> responseEntity;
-        try {
-            User user = userService.getUserFromId(userId);
-            if (user != null) {
-                responseBody = new EventPlannerResponseBody(SUCCESS, userMapper.toDto(user));
-                responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
-            } else {
-                responseBody = new EventPlannerResponseBody("Unable to fetch user " + userId + " from DB");
-                responseEntity = new ResponseEntity<>(responseBody, HttpStatus.NOT_FOUND);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            responseBody = new EventPlannerResponseBody(e.getMessage());
-            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        return responseEntity;
+    @ResponseBody
+    @SneakyThrows
+    public EventPlannerResponse getUser(@RequestParam(value = "id") Long userId,
+                                        @RequestHeader(required = false) Map<String, String> requestHeaders) {
+        User user = userService.getUserFromId(userId);
+        return new EventPlannerResponse(SUCCESS, userMapper.toDTO(user));
     }
 
     @GetMapping("/all")
-    public ResponseEntity<EventPlannerResponseBody> getUsers() {
+    @ResponseBody
+    public EventPlannerResponse getUsers() {
         List<User> users = userService.getUsers();
-        UserDTO [] userDTOs = new UserDTO[users.size()];
-        EventPlannerResponseBody responseBody = new EventPlannerResponseBody(SUCCESS, userMapper.toDtos(users).toArray(userDTOs));
-        return new ResponseEntity<>(responseBody, HttpStatus.OK);
+        UserDTO[] userDTOs = new UserDTO[users.size()];
+        return new EventPlannerResponse(SUCCESS, userMapper.toDTOs(users).toArray(userDTOs));
     }
 
     @GetMapping("/events")
-    public ResponseEntity<EventPlannerResponseBody> getUserEvents(@RequestParam(value = "id", required = false) Long userId,
-                                                                  @RequestHeader(required = false) Map<String, String> requestHeaders) {
-        EventPlannerResponseBody responseBody;
-        ResponseEntity<EventPlannerResponseBody> responseEntity;
-        try {
-            User user = userService.getUserFromId(userId);
-            List<Event> events = user.getEvents();
-            EventDTO [] eventDTOs = new EventDTO[events.size()];
-            responseBody = new EventPlannerResponseBody(SUCCESS, eventMapper.toDtos(events).toArray(eventDTOs));
-            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
-        } catch (JSONException e) {
-            responseBody = new EventPlannerResponseBody(e.getMessage());
-            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
-        } catch (UserServiceException e) {
-            responseBody = new EventPlannerResponseBody(e.getMessage());
-            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.NO_CONTENT);
-        } catch (Exception e) {
-            responseBody = new EventPlannerResponseBody(e.getMessage());
-            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        return responseEntity;
+    @ResponseBody
+    @SneakyThrows
+    public EventPlannerResponse getUserEvents(@RequestParam(value = "id", required = false) Long userId,
+                                              @RequestHeader(required = false) Map<String, String> requestHeaders) {
+        User user = userService.getUserFromId(userId);
+        List<Event> events = user.getEvents();
+        EventDTO[] eventDTOs = new EventDTO[events.size()];
+        return new EventPlannerResponse(SUCCESS, eventMapper.toDTOs(events).toArray(eventDTOs));
     }
 
     @PostMapping("/authenticate")
-    public ResponseEntity<EventPlannerResponseBody> authenticateUser(@RequestHeader(required = false) Map<String, String> requestHeaders,
-                                                                     @RequestBody String requestBody) {
-        EventPlannerResponseBody responseBody;
-        ResponseEntity<EventPlannerResponseBody> responseEntity;
-        try {
-            JSONObject requestBodyJson = new JSONObject(requestBody);
-            String username = requestBodyJson.getString(USERNAME);
-            String password = requestBodyJson.optString(PASSWORD);
-            User user = userService.authenticateUser(username, password);
-            responseBody = new EventPlannerResponseBody(SUCCESS, userMapper.toDto(user));
-            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
-        } catch (JSONException e) {
-            responseBody = new EventPlannerResponseBody(e.getMessage());
-            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
-        } catch (UserServiceException e) {
-            responseBody = new EventPlannerResponseBody(e.getMessage());
-            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.UNAUTHORIZED);
-        } catch (Exception e) {
-            e.printStackTrace();
-            responseBody = new EventPlannerResponseBody(e.getMessage());
-            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        return responseEntity;
+    @ResponseBody
+    @SneakyThrows
+    public EventPlannerResponse authenticateUser(@RequestHeader(required = false) Map<String, String> requestHeaders,
+                                                 @RequestBody EventPlannerRequest request) {
+        User user = userService.authenticateUser(request.getUsername(), request.getPassword());
+        return new EventPlannerResponse(SUCCESS, userMapper.toDTO(user));
     }
 
     @PostMapping("/search")
-    public ResponseEntity<EventPlannerResponseBody> searchUserByName(@RequestHeader(required = false) Map<String, String> requestHeaders,
-                                                                     @RequestBody(required = false) String requestBody) {
-        EventPlannerResponseBody responseBody;
-        ResponseEntity<EventPlannerResponseBody> responseEntity;
-        try {
-            JSONObject requestBodyJson = new JSONObject(requestBody);
-            String name = requestBodyJson.getString(NAME);
-            String searchType = requestBodyJson.optString(SEARCH_TYPE);
-            List<User> users;
-            if (STARTS_WITH.equals(searchType))
-                users = userService.getUserFromNameStartingWith(name);
-            else if (CONTAINING.equals(searchType))
-                users = userService.getUsersFromNameContaining(name);
-            else
-                users = userService.getUsersFromName(name);
-            UserDTO [] userDTOs = new UserDTO[users.size()];
-            responseBody = new EventPlannerResponseBody(SUCCESS, userMapper.toDtos(users).toArray(userDTOs));
-            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
-        } catch (JSONException e) {
-            responseBody = new EventPlannerResponseBody(e.getMessage());
-            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
-        } catch (Exception e) {
-            e.printStackTrace();
-            responseBody = new EventPlannerResponseBody(e.getMessage());
-            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        return responseEntity;
+    @ResponseBody
+    public EventPlannerResponse searchUserByName(@RequestHeader(required = false) Map<String, String> requestHeaders,
+                                                 @RequestBody(required = false) EventPlannerRequest request) {
+        List<User> users;
+        if (STARTS_WITH.equals(request.getSearchType()))
+            users = userService.getUserFromNameStartingWith(request.getName());
+        else if (CONTAINING.equals(request.getSearchType()))
+            users = userService.getUsersFromNameContaining(request.getName());
+        else
+            users = userService.getUsersFromName(request.getName());
+        UserDTO[] userDTOs = new UserDTO[users.size()];
+        return new EventPlannerResponse(SUCCESS, userMapper.toDTOs(users).toArray(userDTOs));
     }
 
     @PostMapping("/add")
-    public ResponseEntity<EventPlannerResponseBody> postUser(@RequestHeader(required = false) Map<String, String> requestHeaders,
-                                                             @RequestBody String requestBody) {
-        EventPlannerResponseBody responseBody;
-        ResponseEntity<EventPlannerResponseBody> responseEntity;
+    @ResponseBody
+    @SneakyThrows
+    @DataQuality(requestType = "createUser")
+    @ResponseStatus(HttpStatus.CREATED)
+    public EventPlannerResponse createUser(@RequestHeader(required = false) Map<String, String> requestHeaders,
+                                           @RequestBody EventPlannerRequest request) {
+        User user = User.builder()
+                .userName(request.getUsername())
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .email(request.getEmail())
+                .password(request.getPassword())
+                .location(request.getLocation())
+                .build();
 
-        try {
-            if (requestBody == null || requestBody.isBlank()) {
-                responseBody = new EventPlannerResponseBody("Cannot store null user");
-                responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
-            }
-            else {
-                User user = new User();
-                JSONObject requestBodyJson = new JSONObject(requestBody);
-
-                Optional.ofNullable(requestBodyJson.optString("userName")).ifPresent(user::setUserName);
-                Optional.ofNullable(requestBodyJson.optString("firstName")).ifPresent(user::setFirstName);
-                Optional.ofNullable(requestBodyJson.optString("lastName")).ifPresent(user::setLastName);
-                Optional.ofNullable(requestBodyJson.optString("email")).ifPresent(user::setEmail);
-                Optional.ofNullable(requestBodyJson.optString("password")).ifPresent(user::setPassword);
-                Optional.ofNullable(requestBodyJson.optJSONObject("location")).ifPresent(location -> user.setLocation(getLocationFromJson(location)));
-                User storedUser = userService.storeUser(user);
-                responseBody = new EventPlannerResponseBody(SUCCESS, userMapper.toDto(storedUser));
-                responseEntity = new ResponseEntity<>(responseBody, HttpStatus.CREATED);
-            }
-        } catch (UserServiceException | JSONException e) {
-            responseBody = new EventPlannerResponseBody(e.getMessage());
-            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
-        } catch (Exception e) {
-            e.printStackTrace();
-            responseBody = new EventPlannerResponseBody(e.getMessage());
-            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        return responseEntity;
+        User storedUser = userService.storeUser(user);
+        return new EventPlannerResponse(SUCCESS, userMapper.toDTO(storedUser));
     }
 
     @PutMapping("/update")
-    public ResponseEntity<EventPlannerResponseBody> updateUser(@RequestHeader(required = false) Map<String, String> requestHeaders,
-                                                               @RequestBody String requestBody) {
-        EventPlannerResponseBody responseBody;
-        ResponseEntity<EventPlannerResponseBody> responseEntity;
-        try {
-            if (requestBody == null || requestBody.isBlank()) {
-                responseBody = new EventPlannerResponseBody("Cannot update null user");
-                responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
-            } else {
-                User updateUser = new User();
-                JSONObject requestBodyJson = new JSONObject(requestBody);
-                if (!validRequestBodyJson(requestBodyJson, USER_ID)) {
-                    responseBody = new EventPlannerResponseBody("Unable to update user with no userId");
-                    responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
-                } else {
-                    Long userId = requestBodyJson.getLong(USER_ID);
-                    Optional.ofNullable(requestBodyJson.optString("userName")).ifPresent(updateUser::setUserName);
-                    Optional.ofNullable(requestBodyJson.optString("firstName")).ifPresent(updateUser::setFirstName);
-                    Optional.ofNullable(requestBodyJson.optString("lastName")).ifPresent(updateUser::setLastName);
-                    Optional.ofNullable(requestBodyJson.optString("email")).ifPresent(updateUser::setEmail);
-                    Optional.ofNullable(requestBodyJson.optString("newPassword")).ifPresent(updateUser::setPassword);
-                    Optional.ofNullable(requestBodyJson.optJSONObject("location")).ifPresent(location -> updateUser.setLocation(getLocationFromJson(location)));
-                    String originalPassword = requestBodyJson.optString("originalPassword");
-                    User updatedUser = userService.updateUser(userId, updateUser, originalPassword);
-                    responseBody = new EventPlannerResponseBody(SUCCESS, userMapper.toDto(updatedUser));
-                    responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
-                }
-            }
-        } catch (JSONException e) {
-            responseBody = new EventPlannerResponseBody(e.getMessage());
-            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
-        } catch (UserServiceException e) {
-            responseBody = new EventPlannerResponseBody(e.getMessage());
-            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.UNAUTHORIZED);
-        } catch (Exception e) {
-            e.printStackTrace();
-            responseBody = new EventPlannerResponseBody(e.getMessage());
-            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        return responseEntity;
+    @ResponseBody
+    @SneakyThrows
+    @DataQuality(requestType = "updateUser")
+    public EventPlannerResponse updateUser(@RequestHeader(required = false) Map<String, String> requestHeaders,
+                                           @RequestBody EventPlannerRequest request) {
+        User updateUser = User.builder()
+                .userName(request.getUsername())
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .email(request.getEmail())
+                .password(request.getNewPassword())
+                .build();
+        User updatedUser = userService.updateUser(request.getUserId(), updateUser, request.getOriginalPassword());
+        return new EventPlannerResponse(SUCCESS, userMapper.toDTO(updatedUser));
     }
 
     @DeleteMapping("/delete")
-    public ResponseEntity<EventPlannerResponseBody> deleteEvent(@RequestParam(value = "id", required = false) Long userId,
-                                                                @RequestHeader(required = false) Map<String, String> requestHeaders,
-                                                                @RequestBody(required = false) String requestBody) {
-        EventPlannerResponseBody responseBody;
-        ResponseEntity<EventPlannerResponseBody> responseEntity;
-        try {
-            if (!(requestBody == null || requestBody.isBlank())) {
-                JSONObject requestBodyJson = new JSONObject(requestBody);
-                userId = requestBodyJson.getLong(USER_ID);
-            }
-            if (userService.userExists(userId)) {
-                List<Long> eventIds = userService.getHostingEventIds(userId);
-                if (eventIds != null) {
-                    eventService.removeEvents(eventIds);
-                }
-                userService.removeUser(userId);
-                responseBody = new EventPlannerResponseBody("User " + userId + " and its Event(s) " + eventIds + " removed.");
-                responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
-            } else {
-                responseBody = new EventPlannerResponseBody("User " + userId + " does not exist");
-                responseEntity = new ResponseEntity<>(responseBody, HttpStatus.NOT_FOUND);
-            }
-        } catch (JSONException e) {
-            responseBody = new EventPlannerResponseBody(e.getMessage());
-            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
-        }catch (Exception e) {
-            e.printStackTrace();
-            responseBody = new EventPlannerResponseBody(e.getMessage());
-            responseEntity = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);;
-        }
-        return responseEntity;
-    }
-
-    public Location getLocationFromJson(JSONObject locationJson) {
-        Location location = new Location();
-        Optional.ofNullable(locationJson.optString("streetAddress")).ifPresent(location::setStreetAddress);
-        Optional.ofNullable(locationJson.optString("city")).ifPresent(location::setCity);
-        Optional.ofNullable(locationJson.optString("state")).ifPresent(location::setState);
-        Optional.ofNullable(locationJson.optString("postalCode")).ifPresent(location::setPostalCode);
-        return location;
-    }
-
-    private boolean validRequestBodyJson(JSONObject requestBodyJson, String... necessaryKeys) {
-        boolean result = false;
-        for (String key : necessaryKeys) {
-            result = !requestBodyJson.isEmpty() && requestBodyJson.has(key) && requestBodyJson.get(key) != JSONObject.NULL;
-        }
-        return result;
+    @ResponseBody
+    @SneakyThrows
+    public EventPlannerResponse deleteEvent(@RequestParam(value = "id", required = false) Long userId,
+                                            @RequestHeader(required = false) Map<String, String> requestHeaders) {
+        List<Long> hostedEventIds = userService.removeUser(userId);
+        if (!hostedEventIds.isEmpty())
+            eventService.removeEvents(hostedEventIds);
+        return new EventPlannerResponse("User " + userId + " and their Event(s) " + hostedEventIds + " removed.");
     }
 }

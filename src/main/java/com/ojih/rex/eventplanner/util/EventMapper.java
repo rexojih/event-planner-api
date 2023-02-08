@@ -1,8 +1,8 @@
-package com.ojih.rex.eventplanner.utilities;
+package com.ojih.rex.eventplanner.util;
 
 import com.ojih.rex.eventplanner.model.Event;
-import com.ojih.rex.eventplanner.model.dto.EventDTO;
 import com.ojih.rex.eventplanner.model.User;
+import com.ojih.rex.eventplanner.model.dto.EventDTO;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -12,7 +12,7 @@ import java.util.List;
 public class EventMapper implements Mapper<EventDTO, Event> {
 
     @Override
-    public EventDTO toDto(Event event) {
+    public EventDTO toDTO(Event event) {
         List<Long> attendeeIds = new ArrayList<>();
 
         if (event.getAttendees() != null) {
@@ -35,10 +35,10 @@ public class EventMapper implements Mapper<EventDTO, Event> {
     }
 
     @Override
-    public List<EventDTO> toDtos(List<Event> events) {
+    public List<EventDTO> toDTOs(List<Event> events) {
         List<EventDTO> eventDtos = new ArrayList<>();
         for (Event event : events) {
-            eventDtos.add(this.toDto(event));
+            eventDtos.add(this.toDTO(event));
         }
         return eventDtos;
     }
