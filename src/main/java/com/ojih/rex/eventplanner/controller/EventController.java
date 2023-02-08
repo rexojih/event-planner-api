@@ -6,6 +6,7 @@ import com.ojih.rex.eventplanner.model.User;
 import com.ojih.rex.eventplanner.model.dto.EventDTO;
 import com.ojih.rex.eventplanner.model.dto.UserDTO;
 import com.ojih.rex.eventplanner.model.request.EventPlannerRequest;
+import com.ojih.rex.eventplanner.model.response.EventPlannerMessage;
 import com.ojih.rex.eventplanner.model.response.EventPlannerResponse;
 import com.ojih.rex.eventplanner.service.EventService;
 import com.ojih.rex.eventplanner.service.UserService;
@@ -51,7 +52,9 @@ public class EventController {
     public EventPlannerResponse getEvent(@RequestParam(value = "id") Long eventId,
                                          @RequestHeader(required = false) Map<String, String> requestHeaders) {
         Event event = eventService.getEventFromId(eventId);
-        return new EventPlannerResponse(SUCCESS, eventMapper.toDTO(event));
+        return EventPlannerResponse.builder()
+                .eventPlannerMessage(new EventPlannerMessage(SUCCESS, eventMapper.toDTO(event)))
+                .build();
     }
 
     @PostMapping("/getFromIds")
@@ -65,7 +68,9 @@ public class EventController {
         else
             events = eventService.getEventsFromIds(request.getEventIds());
         EventDTO[] eventDTOs = new EventDTO[events.size()];
-        return new EventPlannerResponse(SUCCESS, eventMapper.toDTOs(events).toArray(eventDTOs));
+        return EventPlannerResponse.builder()
+                .eventPlannerMessage(new EventPlannerMessage(SUCCESS, eventMapper.toDTOs(events).toArray(eventDTOs)))
+                .build();
     }
 
     @GetMapping("/getFromHostId")
@@ -81,7 +86,9 @@ public class EventController {
         else
             events = eventService.getEventsFromHostId(hostId);
         EventDTO[] eventDTOs = new EventDTO[events.size()];
-        return new EventPlannerResponse(SUCCESS, eventMapper.toDTOs(events).toArray(eventDTOs));
+        return EventPlannerResponse.builder()
+                .eventPlannerMessage(new EventPlannerMessage(SUCCESS, eventMapper.toDTOs(events).toArray(eventDTOs)))
+                .build();
     }
 
 
@@ -98,14 +105,18 @@ public class EventController {
         else
             events = eventService.getEventsFromCity(city);
         EventDTO[] eventDTOs = new EventDTO[events.size()];
-        return new EventPlannerResponse(SUCCESS, eventMapper.toDTOs(events).toArray(eventDTOs));
+        return EventPlannerResponse.builder()
+                .eventPlannerMessage(new EventPlannerMessage(SUCCESS, eventMapper.toDTOs(events).toArray(eventDTOs)))
+                .build();
     }
 
     @GetMapping("/all")
     public EventPlannerResponse getAllEvents() {
         List<Event> events = eventService.getEvents();
         EventDTO[] eventDTOs = new EventDTO[events.size()];
-        return new EventPlannerResponse(SUCCESS, eventMapper.toDTOs(events).toArray(eventDTOs));
+        return EventPlannerResponse.builder()
+                .eventPlannerMessage(new EventPlannerMessage(SUCCESS, eventMapper.toDTOs(events).toArray(eventDTOs)))
+                .build();
     }
 
     @GetMapping("/attendees")
@@ -116,7 +127,9 @@ public class EventController {
         Event event = eventService.getEventFromId(eventId);
         List<User> users = event.getAttendees();
         UserDTO[] userDTOs = new UserDTO[users.size()];
-        return new EventPlannerResponse(SUCCESS, userMapper.toDTOs(users).toArray(userDTOs));
+        return EventPlannerResponse.builder()
+                .eventPlannerMessage(new EventPlannerMessage(SUCCESS, userMapper.toDTOs(users).toArray(userDTOs)))
+                .build();
     }
 
     @PostMapping("/search")
@@ -147,7 +160,9 @@ public class EventController {
                 events = eventService.getEventsFromTitle(request.getTitle());
         }
         EventDTO[] eventDTOs = new EventDTO[events.size()];
-        return new EventPlannerResponse(SUCCESS, eventMapper.toDTOs(events).toArray(eventDTOs));
+        return EventPlannerResponse.builder()
+                .eventPlannerMessage(new EventPlannerMessage(SUCCESS, eventMapper.toDTOs(events).toArray(eventDTOs)))
+                .build();
     }
 
     @PostMapping("/add")
@@ -167,7 +182,9 @@ public class EventController {
                 .maxAttendees(request.getMaxAttendees())
                 .build();
         Event storedEvent = eventService.storeEvent(host, event);
-        return new EventPlannerResponse(SUCCESS, eventMapper.toDTO(storedEvent));
+        return EventPlannerResponse.builder()
+                .eventPlannerMessage(new EventPlannerMessage(SUCCESS, eventMapper.toDTO(storedEvent)))
+                .build();
     }
 
     @PutMapping("/update")
@@ -185,7 +202,9 @@ public class EventController {
                 .maxAttendees(request.getMaxAttendees())
                 .build();
         Event updatedEvent = eventService.updateEvent(request.getEventId(), updateEvent);
-        return new EventPlannerResponse(eventMapper.toDTO(updatedEvent));
+        return EventPlannerResponse.builder()
+                .eventPlannerMessage(new EventPlannerMessage(eventMapper.toDTO(updatedEvent)))
+                .build();
     }
 
     @PutMapping("/addAttendee")
@@ -196,7 +215,9 @@ public class EventController {
                                                  @RequestBody EventPlannerRequest request) {
         User attendee = userService.getUserFromId(request.getUserId());
         Event updatedEvent = eventService.addEventAttendee(request.getEventId(), attendee);
-        return new EventPlannerResponse(eventMapper.toDTO(updatedEvent));
+        return EventPlannerResponse.builder()
+                .eventPlannerMessage(new EventPlannerMessage(eventMapper.toDTO(updatedEvent)))
+                .build();
     }
 
     @DeleteMapping("/delete")
@@ -205,7 +226,9 @@ public class EventController {
     public EventPlannerResponse deleteEvent(@RequestParam(value = "id") Long eventId,
                                             @RequestHeader(required = false) Map<String, String> requestHeaders) {
         eventService.removeEvent(eventId);
-        return new EventPlannerResponse("Event " + eventId + " removed.");
+        return EventPlannerResponse.builder()
+                .eventPlannerMessage(new EventPlannerMessage("Event " + eventId + " removed."))
+                .build();
     }
 
     public Date getDateFomDateString(String dateString) throws ParseException {

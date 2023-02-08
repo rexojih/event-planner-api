@@ -6,6 +6,7 @@ import com.ojih.rex.eventplanner.model.User;
 import com.ojih.rex.eventplanner.model.dto.EventDTO;
 import com.ojih.rex.eventplanner.model.dto.UserDTO;
 import com.ojih.rex.eventplanner.model.request.EventPlannerRequest;
+import com.ojih.rex.eventplanner.model.response.EventPlannerMessage;
 import com.ojih.rex.eventplanner.model.response.EventPlannerResponse;
 import com.ojih.rex.eventplanner.service.EventService;
 import com.ojih.rex.eventplanner.service.UserService;
@@ -47,7 +48,9 @@ public class UserController {
     public EventPlannerResponse getUser(@RequestParam(value = "id") Long userId,
                                         @RequestHeader(required = false) Map<String, String> requestHeaders) {
         User user = userService.getUserFromId(userId);
-        return new EventPlannerResponse(SUCCESS, userMapper.toDTO(user));
+        return EventPlannerResponse.builder()
+                .eventPlannerMessage(new EventPlannerMessage(SUCCESS, userMapper.toDTO(user)))
+                .build();
     }
 
     @GetMapping("/all")
@@ -55,7 +58,9 @@ public class UserController {
     public EventPlannerResponse getUsers() {
         List<User> users = userService.getUsers();
         UserDTO[] userDTOs = new UserDTO[users.size()];
-        return new EventPlannerResponse(SUCCESS, userMapper.toDTOs(users).toArray(userDTOs));
+        return EventPlannerResponse.builder()
+                .eventPlannerMessage(new EventPlannerMessage(SUCCESS, userMapper.toDTOs(users).toArray(userDTOs)))
+                .build();
     }
 
     @GetMapping("/events")
@@ -66,7 +71,9 @@ public class UserController {
         User user = userService.getUserFromId(userId);
         List<Event> events = user.getEvents();
         EventDTO[] eventDTOs = new EventDTO[events.size()];
-        return new EventPlannerResponse(SUCCESS, eventMapper.toDTOs(events).toArray(eventDTOs));
+        return EventPlannerResponse.builder()
+                .eventPlannerMessage(new EventPlannerMessage(SUCCESS, eventMapper.toDTOs(events).toArray(eventDTOs)))
+                .build();
     }
 
     @PostMapping("/authenticate")
@@ -75,7 +82,9 @@ public class UserController {
     public EventPlannerResponse authenticateUser(@RequestHeader(required = false) Map<String, String> requestHeaders,
                                                  @RequestBody EventPlannerRequest request) {
         User user = userService.authenticateUser(request.getUsername(), request.getPassword());
-        return new EventPlannerResponse(SUCCESS, userMapper.toDTO(user));
+        return EventPlannerResponse.builder()
+                .eventPlannerMessage(new EventPlannerMessage(SUCCESS, userMapper.toDTO(user)))
+                .build();
     }
 
     @PostMapping("/search")
@@ -90,7 +99,9 @@ public class UserController {
         else
             users = userService.getUsersFromName(request.getName());
         UserDTO[] userDTOs = new UserDTO[users.size()];
-        return new EventPlannerResponse(SUCCESS, userMapper.toDTOs(users).toArray(userDTOs));
+        return EventPlannerResponse.builder()
+                .eventPlannerMessage(new EventPlannerMessage(SUCCESS, userMapper.toDTOs(users).toArray(userDTOs)))
+                .build();
     }
 
     @PostMapping("/add")
@@ -110,7 +121,9 @@ public class UserController {
                 .build();
 
         User storedUser = userService.storeUser(user);
-        return new EventPlannerResponse(SUCCESS, userMapper.toDTO(storedUser));
+        return EventPlannerResponse.builder()
+                .eventPlannerMessage(new EventPlannerMessage(SUCCESS, userMapper.toDTO(storedUser)))
+                .build();
     }
 
     @PutMapping("/update")
@@ -127,7 +140,9 @@ public class UserController {
                 .password(request.getNewPassword())
                 .build();
         User updatedUser = userService.updateUser(request.getUserId(), updateUser, request.getOriginalPassword());
-        return new EventPlannerResponse(SUCCESS, userMapper.toDTO(updatedUser));
+        return EventPlannerResponse.builder()
+                .eventPlannerMessage(new EventPlannerMessage(SUCCESS, userMapper.toDTO(updatedUser)))
+                .build();
     }
 
     @DeleteMapping("/delete")
@@ -138,6 +153,10 @@ public class UserController {
         List<Long> hostedEventIds = userService.removeUser(userId);
         if (!hostedEventIds.isEmpty())
             eventService.removeEvents(hostedEventIds);
-        return new EventPlannerResponse("User " + userId + " and their Event(s) " + hostedEventIds + " removed.");
+        return EventPlannerResponse.builder()
+                .eventPlannerMessage(new EventPlannerMessage("User "
+                        + userId + " and their Event(s) "
+                        + hostedEventIds + " removed."))
+                .build();
     }
 }

@@ -5,10 +5,12 @@ import com.ojih.rex.eventplanner.exception.event.EventNotFoundException;
 import com.ojih.rex.eventplanner.exception.user.ExistingUserException;
 import com.ojih.rex.eventplanner.exception.user.UserNotFoundException;
 import com.ojih.rex.eventplanner.exception.user.UserUnauthenticatedException;
-import com.ojih.rex.eventplanner.model.response.EventPlannerErrorResponse;
+import com.ojih.rex.eventplanner.model.response.EventPlannerErrorMessage;
+import com.ojih.rex.eventplanner.model.response.EventPlannerResponse;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.text.ParseException;
@@ -19,38 +21,50 @@ public class ControllerAdvice {
     @ExceptionHandler(
             ExistingUserException.class
     )
-    public ResponseEntity<EventPlannerErrorResponse> handleUserServiceException(Exception e) {
-        return new ResponseEntity<>(EventPlannerErrorResponse.builder()
-                .type(HttpStatus.CONFLICT.getReasonPhrase())
-                .status(String.valueOf(HttpStatus.CONFLICT.value()))
-                .exception(e.getClass().getSimpleName())
-                .message(e.getMessage())
-                .build(), HttpStatus.CONFLICT);
+    @ResponseBody
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public EventPlannerResponse handleUserServiceException(Exception e) {
+        return EventPlannerResponse.builder()
+                .eventPlannerErrorMessage(EventPlannerErrorMessage.builder()
+                        .type(HttpStatus.CONFLICT.getReasonPhrase())
+                        .status(String.valueOf(HttpStatus.CONFLICT.value()))
+                        .exception(e.getClass().getSimpleName())
+                        .message(e.getMessage())
+                        .build())
+                .build();
     }
 
     @ExceptionHandler({
             UserNotFoundException.class,
             EventNotFoundException.class
     })
-    public ResponseEntity<EventPlannerErrorResponse> handleNotFoundExceptionException(Exception e) {
-        return new ResponseEntity<>(EventPlannerErrorResponse.builder()
-                .type(HttpStatus.NOT_FOUND.getReasonPhrase())
-                .status(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                .exception(e.getClass().getSimpleName())
-                .message(e.getMessage())
-                .build(), HttpStatus.NOT_FOUND);
+    @ResponseBody
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public EventPlannerResponse handleNotFoundExceptionException(Exception e) {
+        return EventPlannerResponse.builder()
+                .eventPlannerErrorMessage(EventPlannerErrorMessage.builder()
+                        .type(HttpStatus.NOT_FOUND.getReasonPhrase())
+                        .status(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                        .exception(e.getClass().getSimpleName())
+                        .message(e.getMessage())
+                        .build())
+                .build();
     }
 
     @ExceptionHandler(
             UserUnauthenticatedException.class
     )
-    public ResponseEntity<EventPlannerErrorResponse> handleUserUnauthenticatedException(Exception e) {
-        return new ResponseEntity<>(EventPlannerErrorResponse.builder()
-                .type(HttpStatus.UNAUTHORIZED.getReasonPhrase())
-                .status(String.valueOf(HttpStatus.UNAUTHORIZED.value()))
-                .exception(e.getClass().getSimpleName())
-                .message(e.getMessage())
-                .build(), HttpStatus.UNAUTHORIZED);
+    @ResponseBody
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public EventPlannerResponse handleUserUnauthenticatedException(Exception e) {
+        return EventPlannerResponse.builder()
+                .eventPlannerErrorMessage(EventPlannerErrorMessage.builder()
+                        .type(HttpStatus.UNAUTHORIZED.getReasonPhrase())
+                        .status(String.valueOf(HttpStatus.UNAUTHORIZED.value()))
+                        .exception(e.getClass().getSimpleName())
+                        .message(e.getMessage())
+                        .build())
+                .build();
     }
 
     @ExceptionHandler({
@@ -58,12 +72,16 @@ public class ControllerAdvice {
             MissingMandatoryFieldException.class,
             IllegalArgumentException.class
     })
-    public ResponseEntity<EventPlannerErrorResponse> handleInputExceptions(Exception e) {
-        return new ResponseEntity<>(EventPlannerErrorResponse.builder()
-                .type(HttpStatus.BAD_REQUEST.getReasonPhrase())
-                .status(String.valueOf(HttpStatus.BAD_REQUEST.value()))
-                .exception(e.getClass().getSimpleName())
-                .message(e.getMessage())
-                .build(), HttpStatus.BAD_REQUEST);
+    @ResponseBody
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public EventPlannerResponse handleInputExceptions(Exception e) {
+        return EventPlannerResponse.builder()
+                .eventPlannerErrorMessage(EventPlannerErrorMessage.builder()
+                        .type(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                        .status(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                        .exception(e.getClass().getSimpleName())
+                        .message(e.getMessage())
+                        .build())
+                .build();
     }
 }

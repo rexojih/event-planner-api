@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class EventPlannerErrorResponse {
+public class EventPlannerErrorMessage {
 
     private final String status;
     private final String type;
