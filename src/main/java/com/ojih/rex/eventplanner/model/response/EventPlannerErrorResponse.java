@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class EventPlannerResponse {
-    private EventPlannerMessage eventPlannerMessage;
+public class EventPlannerErrorResponse {
+    private EventPlannerErrorMessage eventPlannerErrorMessage;
 }

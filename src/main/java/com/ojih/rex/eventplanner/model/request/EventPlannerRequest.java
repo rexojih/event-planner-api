@@ -1,11 +1,13 @@
 package com.ojih.rex.eventplanner.model.request;
 
 import com.ojih.rex.eventplanner.model.Location;
+import lombok.Builder;
 import lombok.Data;
 
 import java.util.List;
 
 @Data
+@Builder
 public class EventPlannerRequest {
     private Long userId;
     private String username;

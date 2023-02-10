@@ -26,7 +26,7 @@ public class DataQualityAspect {
         EventPlannerRequest request = (EventPlannerRequest) joinPoint.getArgs()[1];
         List<String> missingMandatoryFields = new ArrayList<>();
         switch (dataQuality.requestType()) {
-            case CREATE_USER: {
+            case CREATE_USER:
                 Optional.ofNullable(request.getUsername())
                         .ifPresentOrElse(DO_NOTHING, () -> missingMandatoryFields.add("username"));
                 Optional.ofNullable(request.getFirstName())
@@ -40,17 +40,25 @@ public class DataQualityAspect {
                 Optional.ofNullable(request.getLocation())
                         .ifPresentOrElse(DO_NOTHING, () -> missingMandatoryFields.add("location"));
                 break;
-            }
-            case UPDATE_USER: {
+            case AUTHENTICATE_USER:
+                Optional.ofNullable(request.getUsername())
+                        .ifPresentOrElse(DO_NOTHING, () -> missingMandatoryFields.add("username"));
+                Optional.ofNullable(request.getPassword())
+                        .ifPresentOrElse(DO_NOTHING, () -> missingMandatoryFields.add("password"));
+                break;
+            case UPDATE_USER:
                 Optional.ofNullable(request.getUserId())
                         .ifPresentOrElse(DO_NOTHING, () -> missingMandatoryFields.add("userId"));
                 break;
-            }
             case GET_EVENTS_FROM_IDS:
                 Optional.ofNullable(request.getEventIds())
                         .ifPresentOrElse(DO_NOTHING, () -> missingMandatoryFields.add("eventIds"));
                 break;
-            case CREATE_EVENT: {
+            case SEARCH_EVENTS_BY_TITLE:
+                Optional.ofNullable(request.getTitle())
+                        .ifPresentOrElse(DO_NOTHING, () -> missingMandatoryFields.add("title"));
+                break;
+            case CREATE_EVENT:
                 Optional.ofNullable(request.getHostId())
                         .ifPresentOrElse(DO_NOTHING, () -> missingMandatoryFields.add("hostId"));
                 Optional.ofNullable(request.getTitle())
@@ -60,26 +68,22 @@ public class DataQualityAspect {
                 Optional.ofNullable(request.getLocation())
                         .ifPresentOrElse(DO_NOTHING, () -> missingMandatoryFields.add("location"));
                 break;
-            }
-            case UPDATE_EVENT: {
+            case UPDATE_EVENT:
                 Optional.ofNullable(request.getEventId())
                         .ifPresentOrElse(DO_NOTHING, () -> missingMandatoryFields.add("eventId"));
                 break;
-            }
-            case ADD_EVENT_ATTENDEE: {
+            case ADD_EVENT_ATTENDEE:
                 Optional.ofNullable(request.getUserId())
                         .ifPresentOrElse(DO_NOTHING, () -> missingMandatoryFields.add("userId"));
                 Optional.ofNullable(request.getEventId())
                         .ifPresentOrElse(DO_NOTHING, () -> missingMandatoryFields.add("eventId"));
                 break;
-            }
             default:
                 break;
         }
-        if (!missingMandatoryFields.isEmpty()) {
+        if (!missingMandatoryFields.isEmpty())
             throw new MissingMandatoryFieldException("Missing mandatory fields: ["
                     + String.join(", ", missingMandatoryFields)
-                    + "]");
-        }
+                    + "] for request type " + dataQuality.requestType());
     }
 }

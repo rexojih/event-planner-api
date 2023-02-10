@@ -1,12 +1,13 @@
 package com.ojih.rex.eventplanner.controller;
 
 import com.ojih.rex.eventplanner.exception.MissingMandatoryFieldException;
+import com.ojih.rex.eventplanner.exception.ProcessorNotFoundException;
 import com.ojih.rex.eventplanner.exception.event.EventNotFoundException;
 import com.ojih.rex.eventplanner.exception.user.ExistingUserException;
 import com.ojih.rex.eventplanner.exception.user.UserNotFoundException;
 import com.ojih.rex.eventplanner.exception.user.UserUnauthenticatedException;
 import com.ojih.rex.eventplanner.model.response.EventPlannerErrorMessage;
-import com.ojih.rex.eventplanner.model.response.EventPlannerResponse;
+import com.ojih.rex.eventplanner.model.response.EventPlannerErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -23,8 +24,8 @@ public class ControllerAdvice {
     )
     @ResponseBody
     @ResponseStatus(HttpStatus.CONFLICT)
-    public EventPlannerResponse handleUserServiceException(Exception e) {
-        return EventPlannerResponse.builder()
+    public EventPlannerErrorResponse handleUserServiceException(Exception e) {
+        return EventPlannerErrorResponse.builder()
                 .eventPlannerErrorMessage(EventPlannerErrorMessage.builder()
                         .type(HttpStatus.CONFLICT.getReasonPhrase())
                         .status(String.valueOf(HttpStatus.CONFLICT.value()))
@@ -40,8 +41,8 @@ public class ControllerAdvice {
     })
     @ResponseBody
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public EventPlannerResponse handleNotFoundExceptionException(Exception e) {
-        return EventPlannerResponse.builder()
+    public EventPlannerErrorResponse handleNotFoundExceptionException(Exception e) {
+        return EventPlannerErrorResponse.builder()
                 .eventPlannerErrorMessage(EventPlannerErrorMessage.builder()
                         .type(HttpStatus.NOT_FOUND.getReasonPhrase())
                         .status(String.valueOf(HttpStatus.NOT_FOUND.value()))
@@ -56,8 +57,8 @@ public class ControllerAdvice {
     )
     @ResponseBody
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public EventPlannerResponse handleUserUnauthenticatedException(Exception e) {
-        return EventPlannerResponse.builder()
+    public EventPlannerErrorResponse handleUserUnauthenticatedException(Exception e) {
+        return EventPlannerErrorResponse.builder()
                 .eventPlannerErrorMessage(EventPlannerErrorMessage.builder()
                         .type(HttpStatus.UNAUTHORIZED.getReasonPhrase())
                         .status(String.valueOf(HttpStatus.UNAUTHORIZED.value()))
@@ -74,11 +75,27 @@ public class ControllerAdvice {
     })
     @ResponseBody
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public EventPlannerResponse handleInputExceptions(Exception e) {
-        return EventPlannerResponse.builder()
+    public EventPlannerErrorResponse handleInputExceptions(Exception e) {
+        return EventPlannerErrorResponse.builder()
                 .eventPlannerErrorMessage(EventPlannerErrorMessage.builder()
                         .type(HttpStatus.BAD_REQUEST.getReasonPhrase())
                         .status(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                        .exception(e.getClass().getSimpleName())
+                        .message(e.getMessage())
+                        .build())
+                .build();
+    }
+
+    @ExceptionHandler({
+            ProcessorNotFoundException.class
+    })
+    @ResponseBody
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public EventPlannerErrorResponse handleServerExceptions(Exception e) {
+        return EventPlannerErrorResponse.builder()
+                .eventPlannerErrorMessage(EventPlannerErrorMessage.builder()
+                        .type(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
+                        .status(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()))
                         .exception(e.getClass().getSimpleName())
                         .message(e.getMessage())
                         .build())
