@@ -13,7 +13,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-import static com.ojih.rex.eventplanner.constant.EventPlannerConstants.*;
+import static com.ojih.rex.eventplanner.constant.EventPlannerConstants.GET_USER_EVENTS;
+import static com.ojih.rex.eventplanner.constant.EventPlannerConstants.SUCCESS;
 
 @Component
 @RequiredArgsConstructor

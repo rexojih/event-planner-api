@@ -14,7 +14,8 @@ import org.springframework.stereotype.Component;
 
 import java.text.ParseException;
 
-import static com.ojih.rex.eventplanner.constant.EventPlannerConstants.*;
+import static com.ojih.rex.eventplanner.constant.EventPlannerConstants.CREATE_EVENT;
+import static com.ojih.rex.eventplanner.constant.EventPlannerConstants.SUCCESS;
 import static com.ojih.rex.eventplanner.util.DateStringConverter.getDateFomDateString;
 
 @Component

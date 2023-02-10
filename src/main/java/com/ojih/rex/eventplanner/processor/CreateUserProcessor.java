@@ -10,7 +10,8 @@ import com.ojih.rex.eventplanner.util.Mapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import static com.ojih.rex.eventplanner.constant.EventPlannerConstants.*;
+import static com.ojih.rex.eventplanner.constant.EventPlannerConstants.CREATE_USER;
+import static com.ojih.rex.eventplanner.constant.EventPlannerConstants.SUCCESS;
 
 @Component
 @RequiredArgsConstructor
