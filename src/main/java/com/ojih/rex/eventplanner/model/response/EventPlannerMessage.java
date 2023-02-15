@@ -19,7 +19,7 @@ public class EventPlannerMessage {
     }
 
     public EventPlannerMessage(String message,
-                                DTO... data) {
+                               DTO... data) {
         this.message = message;
         this.data = data;
     }

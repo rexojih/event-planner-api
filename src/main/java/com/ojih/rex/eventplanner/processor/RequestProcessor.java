@@ -8,5 +8,6 @@ import java.text.ParseException;
 public interface RequestProcessor {
 
     EventPlannerResponse process(EventPlannerRequest request) throws ParseException;
+
     String processorType();
 }
